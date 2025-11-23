@@ -1,0 +1,16 @@
+mutation SignOut {
+  signOut
+}
+
+mutation DeleteCurrentUser {
+  deleteCurrentUser
+}
+
+mutation UpdateCurrentUser($input: UpdateCurrentUserInput!) {
+  updateCurrentUser(input: $input) {
+    id
+    displayName
+    email
+    status
+  }
+}

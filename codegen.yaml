@@ -1,0 +1,20 @@
+schema: http://localhost:8080/api
+documents: "./lib/graphql/**/*.graphql"
+generates:
+  "./lib/api/_gen/gql.tsx":
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      strictScalars: true
+      scalars:
+        Void: "null"
+        URL: "string"
+        Upload: "File"
+        Time: "string"
+        TimeInterval: "string"
+        JSON: "any"
+  "./lib/api/_gen/fragmentTypes.tsx":
+    plugins:
+      - fragment-matcher

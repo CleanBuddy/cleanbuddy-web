@@ -1,0 +1,22 @@
+mutation AuthWithIdentityProvider($code: String!, $kind: AuthIdentityKind!) {
+  authWithIdentityProvider(code: $code, kind: $kind) {
+    accessToken
+    refreshToken
+  }
+}
+
+mutation AuthWithRefreshToken($token: String!) {
+  authWithRefreshToken(token: $token) {
+    accessToken
+    refreshToken
+  }
+}
+
+query CurrentUser {
+  currentUser {
+    id
+    displayName
+    status
+    email
+  }
+}

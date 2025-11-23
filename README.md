@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaaS Starter Web
+
+A modern, production-ready SaaS starter template built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+
+## Features
+
+- **Authentication**: Google OAuth integration with secure token management
+- **Team Management**: Multi-tenant architecture with team and project organization
+- **Modern UI**: 43+ shadcn/ui components with dark mode support
+- **GraphQL Integration**: Apollo Client with automatic code generation
+- **Type Safety**: Full TypeScript support with GraphQL type generation
+- **Responsive Design**: Mobile-first design with Tailwind CSS
+- **Security**: Secure httpOnly cookies, CSP headers, and protected routes
+- **Developer Experience**: Hot reload, ESLint, and comprehensive documentation
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router and Turbopack
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **UI Components**: shadcn/ui (Radix UI primitives)
+- **State Management**: Apollo Client with reactive variables
+- **Authentication**: Google OAuth via @react-oauth/google
+- **GraphQL**: Apollo Client with GraphQL Code Generator
+- **Forms**: react-hook-form with Zod validation
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 20+ and npm
+- A GraphQL API backend (see saas-starter-api)
+- Google OAuth credentials
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd saas-starter-web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure environment variables:
+```bash
+cp .env.example .env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit `.env` with your configuration:
+```
+NEXT_PUBLIC_API_ENDPOINT=http://localhost:8080
+NEXT_PUBLIC_WS_ENDPOINT=ws://localhost:8080
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+NEXT_PUBLIC_GOOGLE_REDIRECT_URI=http://localhost:3000/auth
+NEXT_PUBLIC_ENVIRONMENT=development
+```
 
-## Learn More
+4. Generate GraphQL types:
+```bash
+npm run codegen
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Start the development server:
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+saas-starter-web/
+├── app/                    # Next.js app directory
+│   ├── layout.tsx         # Root layout with providers
+│   ├── page.tsx           # Landing page
+│   ├── globals.css        # Global styles
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Protected dashboard pages
+│   ├── about/             # Static pages
+│   ├── privacy/
+│   ├── terms/
+│   └── contact/
+├── components/            # React components
+│   ├── ui/               # shadcn/ui components (43+)
+│   ├── providers/        # Context providers
+│   ├── sidebar/          # Navigation components
+│   ├── dialogs/          # Dialog components
+│   └── layout/           # Layout components
+├── lib/                  # Utilities and configuration
+│   ├── apollo-client.ts  # Apollo Client setup
+│   ├── auth.ts          # Authentication utilities
+│   ├── utils.ts         # Helper functions
+│   ├── graphql/         # GraphQL operations
+│   └── api/_gen/        # Generated GraphQL types
+├── hooks/               # Custom React hooks
+├── public/              # Static assets
+├── docs/                # Documentation
+└── .claude/             # Claude AI commands
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Available Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run codegen` - Generate GraphQL types
+
+## Documentation
+
+- [Setup Guide](./docs/SETUP.md)
+- [Architecture Overview](./docs/ARCHITECTURE.md)
+- [Component Guide](./docs/COMPONENTS.md)
+- [Styling Guide](./docs/STYLING.md)
+- [Deployment Guide](./docs/DEPLOYMENT.md)
+- [Claude Rules](./CLAUDE_RULES.md)
+
+## Key Features
+
+### Authentication
+
+- Google OAuth integration
+- Secure httpOnly cookie storage
+- Automatic token refresh
+- Protected routes with authentication checks
+
+### Team & Project Management
+
+- Multi-tenant architecture
+- Team creation and management
+- Project organization within teams
+- Role-based access (owner/member)
+
+### GraphQL Integration
+
+- Type-safe GraphQL operations
+- Automatic code generation
+- Apollo Client with caching
+- WebSocket support for subscriptions
+
+### UI Components
+
+- 43+ shadcn/ui components
+- Dark mode support
+- Responsive design
+- Accessible components (Radix UI)
+
+## Environment Variables
+
+See `.env.example` for all available environment variables:
+
+- `NEXT_PUBLIC_API_ENDPOINT` - GraphQL API endpoint
+- `NEXT_PUBLIC_WS_ENDPOINT` - WebSocket endpoint for subscriptions
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` - Google OAuth client ID
+- `NEXT_PUBLIC_GOOGLE_REDIRECT_URI` - OAuth redirect URI
+- `NEXT_PUBLIC_ENVIRONMENT` - Environment (development/production)
+
+## Deployment
+
+This template can be deployed to:
+
+- Vercel (recommended)
+- Netlify
+- AWS Amplify
+- Docker container
+- Any Node.js hosting
+
+See [Deployment Guide](./docs/DEPLOYMENT.md) for detailed instructions.
+
+## License
+
+MIT License - feel free to use this template for your projects.
+
+## Support
+
+For issues, questions, or contributions, please open an issue on GitHub.

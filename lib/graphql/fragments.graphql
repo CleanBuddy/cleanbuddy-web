@@ -1,0 +1,38 @@
+# GraphQL Fragments for reusable field selections
+
+# Team fragment
+fragment TeamFields on Team {
+  id
+  displayName
+}
+
+# Project fragment
+fragment ProjectFields on Project {
+  id
+  displayName
+}
+
+# Team member fragment
+fragment TeamMemberFields on TeamMember {
+  id
+  roles
+  createdAt
+  user {
+    id
+    displayName
+    email
+    status
+  }
+}
+
+# Team member invite fragment
+fragment TeamMemberInviteFields on TeamMemberInvite {
+  id
+  inviteeEmail
+  createdAt
+  invitedBy {
+    id
+    displayName
+    email
+  }
+}
