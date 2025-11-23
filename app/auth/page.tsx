@@ -4,23 +4,23 @@ import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { useTeam } from "@/components/providers/team-provider";
+import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AuthPage() {
-  const { user } = useTeam();
+  const { data, loading } = useCurrentUserQuery();
   const router = useRouter();
 
   // Redirect to dashboard if user is already authenticated
   useEffect(() => {
-    if (user.data && !user.loading) {
+    if (data?.currentUser && !loading) {
       router.push("/dashboard");
     }
-  }, [user.data, user.loading, router]);
+  }, [data?.currentUser, loading, router]);
 
   // Show loading skeleton while checking authentication
-  if (user.loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/50">
         <div className="w-full max-w-md space-y-4">
@@ -42,7 +42,7 @@ export default function AuthPage() {
   }
 
   // If user is authenticated, show nothing (redirect will happen)
-  if (user.data) {
+  if (data?.currentUser) {
     return null;
   }
 

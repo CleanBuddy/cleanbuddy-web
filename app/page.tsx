@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, Zap, Users, Shield } from "lucide-react";
-import { useTeam } from "@/components/providers/team-provider";
+import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
 
 export default function Home() {
-  const { user } = useTeam();
-  const isAuthenticated = user.data && !user.loading;
+  const { data, loading } = useCurrentUserQuery();
+  const isAuthenticated = !!data?.currentUser && !loading;
 
   return (
     <div className="flex flex-col min-h-screen">

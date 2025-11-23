@@ -11,6 +11,6 @@ mutation UpdateCurrentUser($input: UpdateCurrentUserInput!) {
     id
     displayName
     email
-    status
+    role
   }
 }

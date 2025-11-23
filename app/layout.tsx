@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ApolloClientProvider } from "@/components/providers/apollo-provider";
 import { DialogProvider } from "@/components/providers/dialog-provider";
-import { TeamProvider } from "@/components/providers/team-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -70,11 +69,9 @@ export default function RootLayout({
         >
           <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
             <ApolloClientProvider>
-              <TeamProvider>
-                <DialogProvider>
-                  {children}
-                </DialogProvider>
-              </TeamProvider>
+              <DialogProvider>
+                {children}
+              </DialogProvider>
             </ApolloClientProvider>
           </GoogleOAuthProvider>
         </ThemeProvider>

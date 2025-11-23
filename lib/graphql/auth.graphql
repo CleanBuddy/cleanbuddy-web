@@ -16,7 +16,7 @@ query CurrentUser {
   currentUser {
     id
     displayName
-    status
+    role
     email
   }
 }
