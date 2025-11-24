@@ -1,10 +1,10 @@
-# Claude Code Rules for SaaS Starter Web
+# Claude Code Rules for CleanBuddy Web
 
 This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-This is a Next.js 16 SaaS starter template with:
+This is the CleanBuddy web application built with Next.js 16, featuring:
 - React 19 and TypeScript
 - Apollo Client for GraphQL
 - shadcn/ui component library

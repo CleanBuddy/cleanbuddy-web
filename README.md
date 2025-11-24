@@ -1,11 +1,12 @@
-# SaaS Starter Web
+# CleanBuddy Web
 
-A modern, production-ready SaaS starter template built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+The modern web application for CleanBuddy, built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
 
 ## Features
 
 - **Authentication**: Google OAuth integration with secure token management
-- **Team Management**: Multi-tenant architecture with team and project organization
+- **Role-Based Access**: Support for clients, cleaners, company admins, and global admins
+- **Application System**: Users can apply to become cleaners or company admins
 - **Modern UI**: 43+ shadcn/ui components with dark mode support
 - **GraphQL Integration**: Apollo Client with automatic code generation
 - **Type Safety**: Full TypeScript support with GraphQL type generation
@@ -29,7 +30,7 @@ A modern, production-ready SaaS starter template built with Next.js 16, React 19
 ### Prerequisites
 
 - Node.js 20+ and npm
-- A GraphQL API backend (see saas-starter-api)
+- A GraphQL API backend (see cleanbuddy-api)
 - Google OAuth credentials
 
 ### Installation
@@ -37,7 +38,7 @@ A modern, production-ready SaaS starter template built with Next.js 16, React 19
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd saas-starter-web
+cd cleanbuddy-web
 ```
 
 2. Install dependencies:
@@ -74,7 +75,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see your application.
 ## Project Structure
 
 ```
-saas-starter-web/
+cleanbuddy-web/
 ├── app/                    # Next.js app directory
 │   ├── layout.tsx         # Root layout with providers
 │   ├── page.tsx           # Landing page
@@ -129,12 +130,12 @@ saas-starter-web/
 - Automatic token refresh
 - Protected routes with authentication checks
 
-### Team & Project Management
+### Role & Application Management
 
-- Multi-tenant architecture
-- Team creation and management
-- Project organization within teams
-- Role-based access (owner/member)
+- Multi-role user system (Client, Cleaner, Company Admin, Global Admin)
+- Application submission for role upgrades
+- Admin dashboard for reviewing applications
+- Role-based access control
 
 ### GraphQL Integration
 

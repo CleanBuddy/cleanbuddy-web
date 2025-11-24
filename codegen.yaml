@@ -1,4 +1,4 @@
-schema: http://localhost:8080/api
+schema: https://cleanbuddy-api.vercel.app/api
 documents: "./lib/graphql/**/*.graphql"
 generates:
   "./lib/api/_gen/gql.tsx":
