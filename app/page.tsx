@@ -16,7 +16,7 @@ export default function Home() {
       <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-xl md:text-2xl font-bold">
-            SaaS Starter
+            CleanBuddy
           </Link>
           <nav className="flex gap-2 md:gap-4 items-center">
             <Link href="/about" className="text-sm md:text-base text-muted-foreground hover:text-foreground hidden sm:inline">
@@ -28,11 +28,22 @@ export default function Home() {
             <Link href="/contact" className="text-sm md:text-base text-muted-foreground hover:text-foreground hidden sm:inline">
               Contact
             </Link>
-            <Button asChild variant={isAuthenticated ? "default" : "outline"} size="sm" className="md:size-default">
-              <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-                {isAuthenticated ? "Dashboard" : "Sign In"}
+            {/* CTA for Cleaners to Register/Apply */}
+            <Button asChild variant="outline" size="sm" className="md:size-default">
+              <Link href="/cleaner-signup">
+                Become a Cleaner
               </Link>
             </Button>
+            {/* CTA for Customer Sign In/Dashboard - This can remain for existing users */}
+            {isAuthenticated ? (
+              <Button asChild variant="default" size="sm" className="md:size-default">
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="default" size="sm" className="md:size-default">
+                <Link href="/auth">Sign In</Link>
+              </Button>
+            )}
           </nav>
         </div>
       </header>
@@ -41,16 +52,16 @@ export default function Home() {
       <section className="py-12 md:py-20 px-4">
         <div className="container mx-auto text-center max-w-4xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
-            Build Your SaaS Faster
+            Your Home, Sparkling Clean. Effortlessly.
           </h1>
           <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
-            A modern Next.js SaaS starter template with authentication, team management,
-            and everything you need to launch quickly.
+            Book professional and reliable home cleaning services with CleanBuddy.
+            Enjoy a pristine home without lifting a finger.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-                {isAuthenticated ? "Go to Dashboard" : "Get Started"} <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href="/book">
+                Book a Cleaning <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
@@ -63,32 +74,32 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-12 md:py-20 px-4 bg-muted/50">
         <div className="container mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Everything You Need</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Why Choose CleanBuddy?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             <Card>
               <CardHeader>
                 <Zap className="h-8 w-8 md:h-10 md:w-10 mb-3 md:mb-4 text-primary" />
-                <CardTitle className="text-lg md:text-xl">Lightning Fast</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Fast & Easy Booking</CardTitle>
                 <CardDescription className="text-sm md:text-base">
-                  Built with Next.js 16 and React 19 for optimal performance
+                  Schedule your cleaning in minutes with our intuitive online system.
                 </CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <Users className="h-8 w-8 md:h-10 md:w-10 mb-3 md:mb-4 text-primary" />
-                <CardTitle className="text-lg md:text-xl">Team Management</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Professional Cleaners</CardTitle>
                 <CardDescription className="text-sm md:text-base">
-                  Built-in team and project management out of the box
+                  Experienced and vetted professionals dedicated to perfection.
                 </CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <Shield className="h-8 w-8 md:h-10 md:w-10 mb-3 md:mb-4 text-primary" />
-                <CardTitle className="text-lg md:text-xl">Secure by Default</CardTitle>
+                <CardTitle className="text-lg md:text-xl">Trusted & Secure</CardTitle>
                 <CardDescription className="text-sm md:text-base">
-                  OAuth authentication and secure token management included
+                  Your satisfaction and safety are our top priorities.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -96,75 +107,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Testimonials or How It Works (replacing Pricing for now) */}
       <section className="py-12 md:py-20 px-4">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">Simple Pricing</h2>
-          <div className="grid md:grid-cols-2 gap-4 md:gap-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">How CleanBuddy Works</h2>
+          <div className="grid md:grid-cols-3 gap-4 md:gap-8 text-center">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <CardDescription>Perfect for getting started</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">$0</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
+                <CardTitle className="text-xl">1. Book Online</CardTitle>
+                <CardDescription className="text-base">Select your service, date, and time.</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Up to 3 team members
-                  </li>
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    5 projects
-                  </li>
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Basic support
-                  </li>
-                </ul>
-                <Button asChild className="w-full mt-6" variant="outline">
-                  <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-                    {isAuthenticated ? "Go to Dashboard" : "Get Started"}
-                  </Link>
-                </Button>
+                <CheckCircle className="h-12 w-12 text-primary mx-auto" />
               </CardContent>
             </Card>
-            <Card className="border-primary">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Pro</CardTitle>
-                <CardDescription>For growing teams</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">$29</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
+                <CardTitle className="text-xl">2. Professional Cleaning</CardTitle>
+                <CardDescription className="text-base">Our vetted cleaners make your home sparkle.</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Unlimited team members
-                  </li>
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Unlimited projects
-                  </li>
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Priority support
-                  </li>
-                  <li className="flex items-center text-sm md:text-base">
-                    <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-primary flex-shrink-0" />
-                    Advanced features
-                  </li>
-                </ul>
-                <Button asChild className="w-full mt-6">
-                  <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-                    {isAuthenticated ? "Go to Dashboard" : "Get Started"}
-                  </Link>
-                </Button>
+                <Users className="h-12 w-12 text-primary mx-auto" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">3. Enjoy Your Clean Home</CardTitle>
+                <CardDescription className="text-base">Relax and savor your freshly cleaned space.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Zap className="h-12 w-12 text-primary mx-auto" />
               </CardContent>
             </Card>
           </div>
@@ -174,13 +146,13 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-12 md:py-20 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready to Get Started?</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready for a Cleaner Home?</h2>
           <p className="text-base md:text-xl mb-6 md:mb-8 opacity-90">
-            Join thousands of teams already using our platform
+            Book your first cleaning with CleanBuddy today!
           </p>
           <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-            <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
-              {isAuthenticated ? "Go to Dashboard" : "Start Building Today"} <ArrowRight className="ml-2 h-4 w-4" />
+            <Link href="/book">
+              Book Now <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -194,8 +166,10 @@ export default function Home() {
             <Link href="/privacy" className="text-sm md:text-base hover:text-foreground">Privacy</Link>
             <Link href="/terms" className="text-sm md:text-base hover:text-foreground">Terms</Link>
             <Link href="/contact" className="text-sm md:text-base hover:text-foreground">Contact</Link>
+            {/* Added cleaner link to footer for easy access */}
+            <Link href="/cleaner-signup" className="text-sm md:text-base hover:text-foreground">Become a Cleaner</Link>
           </div>
-          <p className="text-xs md:text-sm">&copy; 2025 SaaS Starter. All rights reserved.</p>
+          <p className="text-xs md:text-sm">&copy; 2025 CleanBuddy. All rights reserved.</p>
         </div>
       </footer>
     </div>

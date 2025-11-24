@@ -4,6 +4,7 @@ import { ApolloClientProvider } from "@/components/providers/apollo-provider";
 import { DialogProvider } from "@/components/providers/dialog-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleMapsLoader } from "@/components/google-maps-loader";
 
 import "./globals.css";
 
@@ -62,6 +63,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleMapsLoader />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
