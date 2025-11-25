@@ -92,7 +92,7 @@ export default function Home() {
                 Enjoy a pristine home without lifting a finger.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
-                {isClient && (
+                {isAuthenticated && isClient && (
                   <Button asChild size="lg" className="w-full sm:w-auto">
                     <Link href="/dashboard">
                       My Bookings <ArrowRight className="ml-2 h-4 w-4" />
@@ -242,8 +242,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section - Only show for non-authenticated users or clients */}
-      {(!isAuthenticated || isClient) && !hasPendingCleanerApplication && (
+      {/* CTA Section - Only show for non-authenticated users or authenticated clients */}
+      {(!isAuthenticated || (isAuthenticated && isClient)) && !hasPendingCleanerApplication && (
         <section className="py-12 md:py-20 px-4 bg-primary text-primary-foreground">
           <div className="container mx-auto text-center max-w-3xl">
             <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready for a Cleaner Home?</h2>
@@ -251,8 +251,8 @@ export default function Home() {
               Book your first cleaning with CleanBuddy today!
             </p>
             <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-              <Link href={isClient ? "/dashboard" : "/book"}>
-                {isClient ? "My Bookings" : "Book Now"} <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href={isAuthenticated && isClient ? "/dashboard" : "/book"}>
+                {isAuthenticated && isClient ? "My Bookings" : "Book Now"} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>

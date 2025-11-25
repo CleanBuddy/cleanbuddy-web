@@ -2,8 +2,22 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Clock, XCircle } from "lucide-react";
+import { AlertCircle, Clock, XCircle, BadgeCheck, LogOut, MoreVertical } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/ui/customer-and-user-avatar";
+import { useCurrentUser } from "@/components/providers/user-provider";
+import { useDialog } from "@/components/providers/dialog-provider";
+import { UserSettingsDialogContent } from "@/components/dialogs/user-settings-dialog";
+import { signOut } from "@/lib/auth";
 import Link from "next/link";
 
 interface ApplicationStatusProps {
@@ -18,10 +32,65 @@ interface ApplicationStatusProps {
 export function ApplicationStatus({ application }: ApplicationStatusProps) {
   const isPending = application.status === "pending";
   const isRejected = application.status === "rejected";
+  const { user } = useCurrentUser();
+  const { openDialog } = useDialog();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
+
+  const handleAccountSettings = () => {
+    if (user) {
+      openDialog(<UserSettingsDialogContent user={{ name: user.displayName, email: user.email }} />);
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-screen p-4">
+      {/* Top bar with user menu */}
+      <div className="max-w-2xl mx-auto mb-4 flex justify-end">
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="gap-2">
+                <UserAvatar author={{ name: user.displayName, email: user.email }} />
+                <div className="hidden sm:flex flex-col items-start text-left">
+                  <span className="text-sm font-medium">{user.displayName}</span>
+                  <span className="text-xs text-muted-foreground">{user.email}</span>
+                </div>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex items-center gap-2">
+                  <UserAvatar author={{ name: user.displayName, email: user.email }} />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{user.displayName}</span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={handleAccountSettings}>
+                  <BadgeCheck className="mr-2 h-4 w-4" />
+                  Account Settings
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      {/* Application status card */}
+      <div className="flex items-center justify-center">
+        <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className="flex items-center gap-3">
             {isPending && <Clock className="h-8 w-8 text-yellow-500" />}
@@ -125,6 +194,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
