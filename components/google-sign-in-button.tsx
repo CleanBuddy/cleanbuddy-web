@@ -46,9 +46,19 @@ export function GoogleSignInButton({
                 // Reset Apollo cache to ensure fresh data is fetched after authentication
                 await apolloClient.resetStore();
 
-                // Navigate to return URL or dashboard
-                const redirectTo = returnTo || localStorage.getItem("auth_return_url") || "/dashboard";
-                localStorage.removeItem("auth_return_url");
+                // Check for cleaner intent
+                const authIntent = localStorage.getItem("authIntent");
+                let redirectTo: string;
+
+                if (authIntent === "cleaner") {
+                    // If applying as cleaner, redirect to application form
+                    localStorage.removeItem("authIntent");
+                    redirectTo = "/cleaner-signup";
+                } else {
+                    // Navigate to return URL or dashboard
+                    redirectTo = returnTo || localStorage.getItem("auth_return_url") || "/dashboard";
+                    localStorage.removeItem("auth_return_url");
+                }
 
                 // Use window.location.href to force a full page reload
                 // This ensures cookies are properly set and auth state is fresh

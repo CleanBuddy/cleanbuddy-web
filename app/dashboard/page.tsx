@@ -11,11 +11,18 @@ import { Sparkles, Calendar, CreditCard, Star, Users, BarChart3, CheckCircle, Cl
 import { DASHBOARD_STATS_CLIENT, DASHBOARD_STATS_CLEANER, DASHBOARD_STATS_ADMIN } from "@/lib/graphql/queries/dashboard-queries";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { UpcomingItemCard } from "@/components/dashboard/upcoming-item-card";
+import { ApplicationStatus } from "@/components/application-status";
+import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
 
 export default function DashboardPage() {
   const { user, loading } = useCurrentUser();
 
-  if (loading) {
+  // Query user's applications to check for pending cleaner application (fallback check)
+  const { data: applicationsData, loading: applicationsLoading } = useQuery(MY_APPLICATIONS, {
+    skip: !user,
+  });
+
+  if (loading || applicationsLoading) {
     return (
       <div className="space-y-6 py-6">
         <Skeleton className="h-8 w-64" />
@@ -26,6 +33,16 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  // Check if user has a pending cleaner application by querying applications (fallback check)
+  const applications = applicationsData?.myApplications || [];
+  const pendingCleanerApplication = applications.find(
+    (app: { applicationType: string; status: string }) => app.applicationType === "cleaner" && app.status === "pending"
+  );
+
+  if (pendingCleanerApplication) {
+    return <ApplicationStatus application={pendingCleanerApplication} />;
   }
 
   // Customer Dashboard

@@ -5,17 +5,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AuthPage() {
   const { data, loading } = useCurrentUserQuery();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const intent = searchParams.get("intent");
+
+  // Store intent in localStorage before authentication
+  useEffect(() => {
+    if (intent === "cleaner") {
+      localStorage.setItem("authIntent", "cleaner");
+    }
+  }, [intent]);
 
   // Redirect to dashboard if user is already authenticated
   useEffect(() => {
     if (data?.currentUser && !loading) {
-      router.push("/dashboard");
+      // Check if there's a stored intent
+      const storedIntent = localStorage.getItem("authIntent");
+      if (storedIntent === "cleaner") {
+        localStorage.removeItem("authIntent");
+        router.push("/cleaner-signup");
+      } else {
+        router.push("/dashboard");
+      }
     }
   }, [data?.currentUser, loading, router]);
 
@@ -57,9 +73,13 @@ export default function AuthPage() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl">
+              {intent === "cleaner" ? "Apply as a Cleaner" : "Welcome Back"}
+            </CardTitle>
             <CardDescription>
-              Sign in to your account to continue
+              {intent === "cleaner"
+                ? "Sign in to continue with your cleaner application"
+                : "Sign in to your account to continue"}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">

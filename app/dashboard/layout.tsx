@@ -19,11 +19,19 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
+import { ApplicationStatus } from "@/components/application-status";
+import { useQuery } from "@apollo/client";
+import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading } = useCurrentUser();
+
+  // Query user's applications to check for pending cleaner application
+  const { data: applicationsData, loading: applicationsLoading } = useQuery(MY_APPLICATIONS, {
+    skip: !user,
+  });
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -32,8 +40,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, router]);
 
-  // Show loading state while checking authentication
-  if (loading) {
+  // Show loading state while checking authentication and applications
+  if (loading || applicationsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-muted-foreground">Loading...</div>
@@ -44,6 +52,17 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   // Don't render if not authenticated
   if (!user) {
     return null;
+  }
+
+  // Check if user has a pending cleaner application by querying applications
+  const applications = applicationsData?.myApplications || [];
+  const pendingCleanerApplication = applications.find(
+    (app: { applicationType: string; status: string }) => app.applicationType === "cleaner" && app.status === "pending"
+  );
+
+  // If user has pending cleaner application, show application status instead of dashboard
+  if (pendingCleanerApplication) {
+    return <ApplicationStatus application={pendingCleanerApplication} />;
   }
 
   // Generate breadcrumbs from pathname

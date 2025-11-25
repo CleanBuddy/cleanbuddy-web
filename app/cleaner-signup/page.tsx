@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
@@ -39,10 +39,30 @@ interface Documents {
 
 export default function CleanerSignupPage() {
   const router = useRouter();
-  const { user } = useCurrentUser();
+  const { user, loading: userLoading, refetch } = useCurrentUser();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<FormStep>("company");
   const [message, setMessage] = useState("");
+
+  // Redirect if user already has pending application or is already a cleaner
+  useEffect(() => {
+    if (!userLoading && user) {
+      // @ts-ignore - pendingCleanerApplication will be available after GraphQL codegen
+      const pendingApplication = user.pendingCleanerApplication;
+
+      // If user has a pending application, redirect to dashboard (which will show ApplicationStatus)
+      if (pendingApplication) {
+        router.push("/dashboard");
+        return;
+      }
+
+      // If user is already an approved cleaner, redirect to dashboard
+      if (user.role === "cleaner") {
+        router.push("/dashboard");
+        return;
+      }
+    }
+  }, [user, userLoading, router]);
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
     companyName: "",
@@ -64,11 +84,17 @@ export default function CleanerSignupPage() {
   });
 
   const [submitApplication, { loading }] = useMutation(SUBMIT_APPLICATION, {
-    onCompleted: () => {
+    onCompleted: async () => {
       toast({
         title: "Application Submitted",
         description: "Your cleaner application has been submitted for review. We'll notify you once it's been processed.",
       });
+
+      // Refetch user data to get the pending application
+      await refetch();
+
+      // The useEffect hook will detect the pending application and redirect to dashboard
+      // which will then show the ApplicationStatus component
       router.push("/dashboard");
     },
     onError: (error) => {

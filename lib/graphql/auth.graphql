@@ -18,5 +18,12 @@ query CurrentUser {
     displayName
     role
     email
+    pendingCleanerApplication {
+      id
+      status
+      applicationType
+      createdAt
+      rejectionReason
+    }
   }
 }

@@ -30,7 +30,7 @@ export default function Home() {
             </Link>
             {/* CTA for Cleaners to Register/Apply */}
             <Button asChild variant="outline" size="sm" className="md:size-default">
-              <Link href="/cleaner-signup">
+              <Link href="/auth?intent=cleaner">
                 Become a Cleaner
               </Link>
             </Button>
@@ -167,7 +167,7 @@ export default function Home() {
             <Link href="/terms" className="text-sm md:text-base hover:text-foreground">Terms</Link>
             <Link href="/contact" className="text-sm md:text-base hover:text-foreground">Contact</Link>
             {/* Added cleaner link to footer for easy access */}
-            <Link href="/cleaner-signup" className="text-sm md:text-base hover:text-foreground">Become a Cleaner</Link>
+            <Link href="/auth?intent=cleaner" className="text-sm md:text-base hover:text-foreground">Become a Cleaner</Link>
           </div>
           <p className="text-xs md:text-sm">&copy; 2025 CleanBuddy. All rights reserved.</p>
         </div>
