@@ -6,9 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const { data, loading } = useCurrentUserQuery();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -108,5 +108,30 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/50">
+        <div className="w-full max-w-md space-y-4">
+          <div className="text-center mb-8">
+            <Skeleton className="h-10 w-48 mx-auto" />
+          </div>
+          <Card>
+            <CardHeader className="text-center">
+              <Skeleton className="h-8 w-48 mx-auto mb-2" />
+              <Skeleton className="h-4 w-64 mx-auto" />
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <Skeleton className="h-14 w-full rounded-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <AuthPageContent />
+    </Suspense>
   );
 }

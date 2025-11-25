@@ -25,9 +25,9 @@ export default function Home() {
   );
 
   const userRole = user?.role;
-  const isClient = userRole === "client" || !userRole;
-  const isCleaner = userRole === "cleaner";
-  const isAdmin = userRole === "global_admin" || userRole === "company_admin";
+  const isClient = userRole === "CLIENT" || !userRole;
+  const isCleaner = userRole === "CLEANER";
+  const isAdmin = userRole === "GLOBAL_ADMIN" || userRole === "COMPANY_ADMIN";
 
   return (
     <div className="flex flex-col min-h-screen">
