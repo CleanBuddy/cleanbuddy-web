@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Clock, MapPin, User as UserIcon, DollarSign, MessageSquare, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
 type ServiceType = "general" | "deep" | "move_in_out";
@@ -50,7 +51,7 @@ interface Booking {
 
 export default function BookingsPage() {
   const { user } = useCurrentUser();
-  const isCleaner = user?.role === "cleaner";
+  const isCleaner = user?.role === UserRole.Cleaner;
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 

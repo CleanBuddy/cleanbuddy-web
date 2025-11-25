@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 interface BookingDetailModalProps {
   bookingId: string;
@@ -69,7 +70,7 @@ export function BookingDetailModal({
 }: BookingDetailModalProps) {
   const { user } = useCurrentUser();
   const { toast } = useToast();
-  const isCleaner = user?.role === "cleaner";
+  const isCleaner = user?.role === UserRole.Cleaner;
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);

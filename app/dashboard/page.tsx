@@ -31,7 +31,7 @@ export default function DashboardPage() {
   }
 
   // Customer Dashboard
-  if (user?.role === "client" || !user?.role) {
+  if (user?.role === UserRole.Client || !user?.role) {
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_CLIENT, {
       skip: !user,
     });
@@ -306,7 +306,7 @@ export default function DashboardPage() {
   }
 
   // Cleaner Dashboard
-  if (user?.role === "cleaner") {
+  if (user?.role === UserRole.Cleaner) {
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_CLEANER, {
       skip: !user,
     });
@@ -445,7 +445,7 @@ export default function DashboardPage() {
   }
 
   // Admin Dashboard
-  if (user?.role === "global_admin" || user?.role === "company_admin") {
+  if (user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) {
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_ADMIN, {
       skip: !user,
     });

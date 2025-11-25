@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Settings as SettingsIcon, User, Bell, Lock, CreditCard } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function SettingsPage() {
   const { user, loading } = useCurrentUser();
@@ -79,7 +80,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {user?.role === "client" && (
+        {user?.role === UserRole.Client && (
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">

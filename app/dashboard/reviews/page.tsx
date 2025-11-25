@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/components/providers/user-provider";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function ReviewsPage() {
   const { user, loading } = useCurrentUser();
@@ -22,9 +23,9 @@ export default function ReviewsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Reviews</h1>
         <p className="text-muted-foreground mt-2">
-          {user?.role === "client" && "View and manage your service reviews"}
-          {user?.role === "cleaner" && "View reviews from your clients"}
-          {(user?.role === "global_admin" || user?.role === "company_admin") && "Manage platform reviews"}
+          {user?.role === UserRole.Client && "View and manage your service reviews"}
+          {user?.role === UserRole.Cleaner && "View reviews from your clients"}
+          {(user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) && "Manage platform reviews"}
         </p>
       </div>
 
@@ -32,14 +33,14 @@ export default function ReviewsPage() {
         icon={Star}
         title="No reviews yet"
         description={
-          user?.role === "client"
+          user?.role === UserRole.Client
             ? "Reviews from your completed bookings will appear here. Book a service to get started!"
-            : user?.role === "cleaner"
+            : user?.role === UserRole.Cleaner
             ? "Reviews from your completed jobs will appear here. Complete jobs to start receiving reviews!"
             : "Platform reviews will appear here once customers start rating services."
         }
-        actionLabel={user?.role === "client" ? "Book a Service" : undefined}
-        actionHref={user?.role === "client" ? "/book" : undefined}
+        actionLabel={user?.role === UserRole.Client ? "Book a Service" : undefined}
+        actionHref={user?.role === UserRole.Client ? "/book" : undefined}
       />
     </div>
   );

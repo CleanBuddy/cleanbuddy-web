@@ -34,6 +34,7 @@ import { useCurrentUser } from "@/components/providers/user-provider";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { SIDEBAR_BADGE_COUNTS } from "@/lib/graphql/queries/dashboard-queries";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useCurrentUser();
@@ -52,7 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const role = user?.role;
 
     // Customer/Client navigation
-    if (role === "client" || !role) {
+    if (role === UserRole.Client || !role) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "Book a Service", url: "/book", icon: Sparkles },
@@ -65,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
 
     // Cleaner navigation
-    if (role === "cleaner") {
+    if (role === UserRole.Cleaner) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "My Jobs", url: "/dashboard/jobs", icon: Briefcase },
@@ -78,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
 
     // Admin navigation
-    if (role === "global_admin" || role === "company_admin") {
+    if (role === UserRole.GlobalAdmin || role === UserRole.CompanyAdmin) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "Applications", url: "/dashboard/applications", icon: FileText, badge: pendingApplicationsCount },
@@ -111,9 +112,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">CleanBuddy</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {user?.role === "client" && "Customer Portal"}
-                    {user?.role === "cleaner" && "Cleaner Portal"}
-                    {(user?.role === "global_admin" || user?.role === "company_admin") && "Admin Portal"}
+                    {user?.role === UserRole.Client && "Customer Portal"}
+                    {user?.role === UserRole.Cleaner && "Cleaner Portal"}
+                    {(user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) && "Admin Portal"}
                   </span>
                 </div>
               </Link>
