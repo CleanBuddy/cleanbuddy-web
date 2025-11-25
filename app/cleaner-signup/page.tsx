@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
 import { SUBMIT_APPLICATION } from "@/lib/graphql/mutations/application-mutations";
+import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,25 +45,41 @@ export default function CleanerSignupPage() {
   const [currentStep, setCurrentStep] = useState<FormStep>("company");
   const [message, setMessage] = useState("");
 
+  // Query user's applications to check for pending cleaner application
+  const { data: applicationsData, loading: applicationsLoading } = useQuery(MY_APPLICATIONS, {
+    skip: !user,
+  });
+
   // Redirect if user already has pending application or is already a cleaner
   useEffect(() => {
-    if (!userLoading && user) {
-      // @ts-ignore - pendingCleanerApplication will be available after GraphQL codegen
-      const pendingApplication = user.pendingCleanerApplication;
+    if (!userLoading && !applicationsLoading && user) {
+      const applications = applicationsData?.myApplications || [];
+      const hasPendingCleanerApplication = applications.some(
+        (app: { applicationType: string; status: string }) =>
+          app.applicationType === "cleaner" && app.status === "pending"
+      );
 
       // If user has a pending application, redirect to dashboard (which will show ApplicationStatus)
-      if (pendingApplication) {
+      if (hasPendingCleanerApplication) {
+        toast({
+          title: "Application Already Submitted",
+          description: "You already have a pending cleaner application under review.",
+        });
         router.push("/dashboard");
         return;
       }
 
       // If user is already an approved cleaner, redirect to dashboard
       if (user.role === "cleaner") {
+        toast({
+          title: "Already a Cleaner",
+          description: "You're already registered as a cleaner.",
+        });
         router.push("/dashboard");
         return;
       }
     }
-  }, [user, userLoading, router]);
+  }, [user, userLoading, applicationsData, applicationsLoading, router, toast]);
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
     companyName: "",
