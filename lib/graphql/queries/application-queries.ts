@@ -109,3 +109,9 @@ export const APPLICATION = gql`
     }
   }
 `;
+
+export const GENERATE_DOCUMENT_SIGNED_URL = gql`
+  query GenerateDocumentSignedUrl($documentUrl: String!) {
+    generateDocumentSignedUrl(documentUrl: $documentUrl)
+  }
+`;

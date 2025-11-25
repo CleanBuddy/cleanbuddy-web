@@ -13,8 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, FileText, Building2, User as UserIcon, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle, XCircle, FileText, Building2, User as UserIcon, Eye } from "lucide-react";
+import { DocumentViewer } from "@/components/document-viewer";
 
 interface CompanyInfo {
   companyName: string;
@@ -56,6 +56,7 @@ export default function ApplicationsPage() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null);
 
   const { data, loading, error, refetch } = useQuery(PENDING_APPLICATIONS, {
     skip: !user || user.role !== "global_admin",
@@ -218,48 +219,72 @@ export default function ApplicationsPage() {
                           <FileText className="h-4 w-4 text-muted-foreground" />
                           Documents
                         </div>
-                        <div className="pl-6 space-y-1 text-sm">
-                          <Link
-                            href={application.documents.identityDocumentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-primary hover:underline"
+                        <div className="pl-6 space-y-2 text-sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                            onClick={() =>
+                              setViewingDocument({
+                                url: application.documents!.identityDocumentUrl,
+                                name: "Identity Document",
+                              })
+                            }
                           >
-                            Identity Document <ExternalLink className="h-3 w-3" />
-                          </Link>
+                            <Eye className="h-3 w-3 mr-1" />
+                            Identity Document
+                          </Button>
                           {application.documents.businessRegistrationUrl && (
-                            <Link
-                              href={application.documents.businessRegistrationUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-primary hover:underline"
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                              onClick={() =>
+                                setViewingDocument({
+                                  url: application.documents!.businessRegistrationUrl!,
+                                  name: "Business Registration",
+                                })
+                              }
                             >
-                              Business Registration <ExternalLink className="h-3 w-3" />
-                            </Link>
+                              <Eye className="h-3 w-3 mr-1" />
+                              Business Registration
+                            </Button>
                           )}
                           {application.documents.insuranceCertificateUrl && (
-                            <Link
-                              href={application.documents.insuranceCertificateUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-primary hover:underline"
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                              onClick={() =>
+                                setViewingDocument({
+                                  url: application.documents!.insuranceCertificateUrl!,
+                                  name: "Insurance Certificate",
+                                })
+                              }
                             >
-                              Insurance Certificate <ExternalLink className="h-3 w-3" />
-                            </Link>
+                              <Eye className="h-3 w-3 mr-1" />
+                              Insurance Certificate
+                            </Button>
                           )}
                           {application.documents.additionalDocuments && application.documents.additionalDocuments.length > 0 && (
-                            <div>
-                              <p className="font-medium text-foreground mb-1">Additional Documents:</p>
+                            <div className="space-y-2">
+                              <p className="font-medium text-foreground">Additional Documents:</p>
                               {application.documents.additionalDocuments.map((doc, index) => (
-                                <Link
+                                <Button
                                   key={index}
-                                  href={doc}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-primary hover:underline"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                                  onClick={() =>
+                                    setViewingDocument({
+                                      url: doc,
+                                      name: `Additional Document ${index + 1}`,
+                                    })
+                                  }
                                 >
-                                  Document {index + 1} <ExternalLink className="h-3 w-3" />
-                                </Link>
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Document {index + 1}
+                                </Button>
                               ))}
                             </div>
                           )}
@@ -360,6 +385,16 @@ export default function ApplicationsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Viewer */}
+      {viewingDocument && (
+        <DocumentViewer
+          documentUrl={viewingDocument.url}
+          documentName={viewingDocument.name}
+          open={!!viewingDocument}
+          onOpenChange={(open) => !open && setViewingDocument(null)}
+        />
+      )}
     </div>
   );
 }

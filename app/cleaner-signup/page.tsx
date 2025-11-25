@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileUpload } from "@/components/ui/file-upload";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building2, FileText, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, Building2, FileText, Upload, CheckCircle2, X } from "lucide-react";
 import Link from "next/link";
 
 type FormStep = "company" | "documents" | "review";
@@ -30,10 +31,10 @@ interface CompanyInfo {
 }
 
 interface Documents {
-  identityDocumentUrl: string;
-  businessRegistrationUrl: string;
-  insuranceCertificateUrl: string;
-  additionalDocuments: string[];
+  identityDocument: File | null;
+  businessRegistration: File | null;
+  insuranceCertificate: File | null;
+  additionalDocuments: File[];
 }
 
 export default function CleanerSignupPage() {
@@ -56,9 +57,9 @@ export default function CleanerSignupPage() {
   });
 
   const [documents, setDocuments] = useState<Documents>({
-    identityDocumentUrl: "",
-    businessRegistrationUrl: "",
-    insuranceCertificateUrl: "",
+    identityDocument: null,
+    businessRegistration: null,
+    insuranceCertificate: null,
     additionalDocuments: [],
   });
 
@@ -83,18 +84,15 @@ export default function CleanerSignupPage() {
     setCompanyInfo((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleDocumentChange = (field: keyof Documents, value: string) => {
+  const handleDocumentChange = (field: keyof Documents, value: File | null) => {
     setDocuments((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddAdditionalDocument = () => {
-    const url = prompt("Enter document URL:");
-    if (url) {
-      setDocuments((prev) => ({
-        ...prev,
-        additionalDocuments: [...prev.additionalDocuments, url],
-      }));
-    }
+  const handleAddAdditionalDocument = (file: File) => {
+    setDocuments((prev) => ({
+      ...prev,
+      additionalDocuments: [...prev.additionalDocuments, file],
+    }));
   };
 
   const handleRemoveAdditionalDocument = (index: number) => {
@@ -125,7 +123,7 @@ export default function CleanerSignupPage() {
   };
 
   const validateDocuments = (): boolean => {
-    if (!documents.identityDocumentUrl.trim()) {
+    if (!documents.identityDocument) {
       toast({ title: "Error", description: "Identity document is required", variant: "destructive" });
       return false;
     }
@@ -165,9 +163,9 @@ export default function CleanerSignupPage() {
           message,
           companyInfo,
           documents: {
-            identityDocumentUrl: documents.identityDocumentUrl,
-            businessRegistrationUrl: documents.businessRegistrationUrl || null,
-            insuranceCertificateUrl: documents.insuranceCertificateUrl || null,
+            identityDocument: documents.identityDocument,
+            businessRegistration: documents.businessRegistration,
+            insuranceCertificate: documents.insuranceCertificate,
             additionalDocuments: documents.additionalDocuments.length > 0 ? documents.additionalDocuments : null,
           },
         },
@@ -337,69 +335,80 @@ export default function CleanerSignupPage() {
 
           {/* Documents Step */}
           {currentStep === "documents" && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Required Documents</h3>
-              <p className="text-sm text-muted-foreground">
-                Please upload your documents to a cloud storage service (Google Drive, Dropbox, etc.) and provide the public links below.
-              </p>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold">Required Documents</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload your documents directly. Supported formats: PDF, JPG, PNG (max 10MB each)
+                </p>
+              </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="identityDocument">Identity Document (ID/Passport) *</Label>
-                  <Input
-                    id="identityDocument"
-                    value={documents.identityDocumentUrl}
-                    onChange={(e) => handleDocumentChange("identityDocumentUrl", e.target.value)}
-                    placeholder="https://..."
-                  />
-                </div>
+              <div className="space-y-6">
+                <FileUpload
+                  label="Identity Document (ID/Passport)"
+                  description="A clear copy of your government-issued ID or passport"
+                  required
+                  value={documents.identityDocument}
+                  onChange={(file) => handleDocumentChange("identityDocument", file)}
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessRegistration">Business Registration Certificate</Label>
-                  <Input
-                    id="businessRegistration"
-                    value={documents.businessRegistrationUrl}
-                    onChange={(e) => handleDocumentChange("businessRegistrationUrl", e.target.value)}
-                    placeholder="https://... (optional)"
-                  />
-                </div>
+                <FileUpload
+                  label="Business Registration Certificate"
+                  description="Official business registration document (if applicable)"
+                  value={documents.businessRegistration}
+                  onChange={(file) => handleDocumentChange("businessRegistration", file)}
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="insuranceCertificate">Insurance Certificate</Label>
-                  <Input
-                    id="insuranceCertificate"
-                    value={documents.insuranceCertificateUrl}
-                    onChange={(e) => handleDocumentChange("insuranceCertificateUrl", e.target.value)}
-                    placeholder="https://... (optional)"
-                  />
-                </div>
+                <FileUpload
+                  label="Insurance Certificate"
+                  description="Proof of liability insurance (if applicable)"
+                  value={documents.insuranceCertificate}
+                  onChange={(file) => handleDocumentChange("insuranceCertificate", file)}
+                />
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label>Additional Documents (optional)</Label>
-                  <div className="space-y-2">
-                    {documents.additionalDocuments.map((doc, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input value={doc} readOnly />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleRemoveAdditionalDocument(index)}
-                        >
-                          ×
-                        </Button>
+                  <p className="text-sm text-muted-foreground">
+                    Upload any additional documents that support your application
+                  </p>
+
+                  {documents.additionalDocuments.map((file, index) => (
+                    <div key={index} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                      <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(file.size / (1024 * 1024)).toFixed(1)} MB
+                        </p>
                       </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddAdditionalDocument}
-                      className="w-full"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Add Document
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveAdditionalDocument(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <div className="relative border-2 border-dashed rounded-lg p-4 hover:border-primary/50 transition-colors">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleAddAdditionalDocument(file);
+                          e.target.value = "";
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className="flex items-center justify-center gap-2 text-sm">
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Click to add document</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -426,11 +435,11 @@ export default function CleanerSignupPage() {
                 <div>
                   <h4 className="font-medium mb-2">Documents</h4>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                    <p><span className="font-medium">Identity Document:</span> ✓ Provided</p>
-                    {documents.businessRegistrationUrl && <p><span className="font-medium">Business Registration:</span> ✓ Provided</p>}
-                    {documents.insuranceCertificateUrl && <p><span className="font-medium">Insurance:</span> ✓ Provided</p>}
+                    <p><span className="font-medium">Identity Document:</span> {documents.identityDocument?.name || "Not provided"}</p>
+                    {documents.businessRegistration && <p><span className="font-medium">Business Registration:</span> {documents.businessRegistration.name}</p>}
+                    {documents.insuranceCertificate && <p><span className="font-medium">Insurance:</span> {documents.insuranceCertificate.name}</p>}
                     {documents.additionalDocuments.length > 0 && (
-                      <p><span className="font-medium">Additional:</span> {documents.additionalDocuments.length} document(s)</p>
+                      <p><span className="font-medium">Additional:</span> {documents.additionalDocuments.map(f => f.name).join(", ")}</p>
                     )}
                   </div>
                 </div>
