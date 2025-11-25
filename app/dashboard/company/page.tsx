@@ -206,15 +206,21 @@ export default function CompanyDashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
-          <Button variant="outline" className="justify-start" disabled>
+          <Button
+            variant="outline"
+            className="justify-start"
+            onClick={() => router.push("/dashboard/company/invites")}
+          >
             <UserPlus className="mr-2 h-4 w-4" />
             Invite Cleaner
-            <Badge variant="secondary" className="ml-auto">Coming Soon</Badge>
           </Button>
-          <Button variant="outline" className="justify-start" disabled>
+          <Button
+            variant="outline"
+            className="justify-start"
+            onClick={() => router.push("/dashboard/company/cleaners")}
+          >
             <Users className="mr-2 h-4 w-4" />
             View Cleaners
-            <Badge variant="secondary" className="ml-auto">Coming Soon</Badge>
           </Button>
           <Button variant="outline" className="justify-start" disabled>
             <Settings className="mr-2 h-4 w-4" />

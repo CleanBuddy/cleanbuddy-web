@@ -1,0 +1,73 @@
+query MyCleanerProfile {
+  myCleanerProfile {
+    id
+    userId
+    companyId
+    bio
+    profilePicture
+    tier
+    hourlyRate
+    isActive
+    isVerified
+    isAvailableToday
+    averageRating
+    totalReviews
+    totalBookings
+    completedBookings
+    createdAt
+    company {
+      id
+      companyName
+    }
+    serviceAreas {
+      id
+      city
+      neighborhood
+      postalCode
+      travelFee
+      isPreferred
+    }
+  }
+}
+
+query TierRateRanges {
+  tierRateRanges {
+    tier
+    minRate
+    maxRate
+  }
+}
+
+mutation CreateCleanerProfile($input: CreateCleanerProfileInput!) {
+  createCleanerProfile(input: $input) {
+    id
+    userId
+    companyId
+    bio
+    tier
+    hourlyRate
+    isActive
+    createdAt
+    company {
+      id
+      companyName
+    }
+    serviceAreas {
+      id
+      city
+      neighborhood
+      postalCode
+    }
+  }
+}
+
+mutation UpdateCleanerProfile($input: UpdateCleanerProfileInput!) {
+  updateCleanerProfile(input: $input) {
+    id
+    bio
+    profilePicture
+    hourlyRate
+    isActive
+    isAvailableToday
+  }
+}

@@ -13,6 +13,14 @@ export function useAuthFlow() {
     userRole: UserRole,
     intent: string | null
   ): string {
+    // Priority 0: Handle invite intent - redirect back to invite page
+    if (intent === "invite") {
+      const inviteToken = localStorage.getItem("inviteToken");
+      if (inviteToken) {
+        return `/invite/${inviteToken}`;
+      }
+    }
+
     // Priority 1: Users who need to complete cleaner application form
     if (userRole === UserRole.PendingApplication) {
       return "/cleaner-signup";

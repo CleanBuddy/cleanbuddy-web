@@ -22,6 +22,9 @@ function AuthPageContent() {
       localStorage.setItem("authIntent", "cleaner");
     } else if (intent === "company") {
       localStorage.setItem("authIntent", "company");
+    } else if (intent === "invite") {
+      // Invite intent - token is already stored by invite page
+      localStorage.setItem("authIntent", "invite");
     }
   }, [intent]);
 
@@ -30,6 +33,13 @@ function AuthPageContent() {
     async function handleAuthRedirect() {
       if (data?.currentUser && !loading) {
         const storedIntent = localStorage.getItem("authIntent");
+        const inviteToken = localStorage.getItem("inviteToken");
+
+        // If user has an invite intent, redirect back to invite page
+        if (storedIntent === "invite" && inviteToken) {
+          router.push(`/invite/${inviteToken}`);
+          return;
+        }
 
         // If CLIENT wants to become cleaner, initiate upgrade flow
         if (

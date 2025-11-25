@@ -55,7 +55,7 @@ export const DASHBOARD_STATS_CLEANER = gql`
           duration
           cleanerPayout
           serviceType
-          client {
+          customer {
             id
             displayName
           }
@@ -67,7 +67,7 @@ export const DASHBOARD_STATS_CLEANER = gql`
       }
       totalCount
     }
-    upcomingJobs(limit: 3) {
+    upcomingBookings(limit: 3) {
       id
       scheduledDate
       scheduledTime
@@ -75,7 +75,7 @@ export const DASHBOARD_STATS_CLEANER = gql`
       status
       serviceType
       cleanerPayout
-      client {
+      customer {
         id
         displayName
       }
@@ -210,7 +210,7 @@ export const RECENT_PLATFORM_ACTIVITY = gql`
 // Sidebar Badge Counts
 export const SIDEBAR_BADGE_COUNTS = gql`
   query SidebarBadgeCounts {
-    me {
+    currentUser {
       id
       role
     }

@@ -22,6 +22,13 @@ export type Scalars = {
   Void: { input: null; output: null; }
 };
 
+export type AcceptCleanerInviteResult = {
+  __typename?: 'AcceptCleanerInviteResult';
+  company: Company;
+  success: Scalars['Boolean']['output'];
+  user: User;
+};
+
 export type AddCleanerResponseInput = {
   response: Scalars['String']['input'];
   reviewId: Scalars['ID']['input'];
@@ -243,6 +250,34 @@ export type CleanerEarnings = {
   totalEarnings: Scalars['Int']['output'];
 };
 
+export type CleanerInvite = {
+  __typename?: 'CleanerInvite';
+  acceptedAt?: Maybe<Scalars['Time']['output']>;
+  acceptedBy?: Maybe<User>;
+  company: Company;
+  createdAt: Scalars['Time']['output'];
+  createdBy: User;
+  email?: Maybe<Scalars['String']['output']>;
+  expiresAt: Scalars['Time']['output'];
+  id: Scalars['ID']['output'];
+  message?: Maybe<Scalars['String']['output']>;
+  status: CleanerInviteStatus;
+  token: Scalars['String']['output'];
+};
+
+export type CleanerInviteResult = {
+  __typename?: 'CleanerInviteResult';
+  invite: CleanerInvite;
+  inviteUrl: Scalars['String']['output'];
+};
+
+export enum CleanerInviteStatus {
+  Accepted = 'ACCEPTED',
+  Expired = 'EXPIRED',
+  Pending = 'PENDING',
+  Revoked = 'REVOKED'
+}
+
 export type CleanerProfile = {
   __typename?: 'CleanerProfile';
   availability: Array<Availability>;
@@ -250,6 +285,8 @@ export type CleanerProfile = {
   backgroundCheck: Scalars['Boolean']['output'];
   bio?: Maybe<Scalars['String']['output']>;
   cancelledBookings: Scalars['Int']['output'];
+  company?: Maybe<Company>;
+  companyId?: Maybe<Scalars['ID']['output']>;
   completedBookings: Scalars['Int']['output'];
   createdAt: Scalars['Time']['output'];
   hourlyRate: Scalars['Int']['output'];
@@ -310,12 +347,14 @@ export type Company = {
   activeCleaners: Scalars['Int']['output'];
   adminUser: User;
   businessType?: Maybe<Scalars['String']['output']>;
+  cleaners: Array<CleanerProfile>;
   companyCity: Scalars['String']['output'];
   companyCountry: Scalars['String']['output'];
   companyCounty?: Maybe<Scalars['String']['output']>;
   companyName: Scalars['String']['output'];
   companyPostalCode: Scalars['String']['output'];
   companyStreet: Scalars['String']['output'];
+  companyType: CompanyType;
   createdAt: Scalars['Time']['output'];
   documents?: Maybe<ApplicationDocuments>;
   id: Scalars['ID']['output'];
@@ -350,6 +389,11 @@ export type CompanyInfoInput = {
   registrationNumber: Scalars['String']['input'];
   taxId: Scalars['String']['input'];
 };
+
+export enum CompanyType {
+  Business = 'BUSINESS',
+  Individual = 'INDIVIDUAL'
+}
 
 export type CreateAddOnDefinitionInput = {
   addOn: ServiceAddOn;
@@ -418,6 +462,12 @@ export type CreateBookingUserInput = {
   email: Scalars['String']['input'];
 };
 
+export type CreateCleanerInviteInput = {
+  email?: InputMaybe<Scalars['String']['input']>;
+  expiresInDays?: InputMaybe<Scalars['Int']['input']>;
+  message?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CreateCleanerProfileInput = {
   bio?: InputMaybe<Scalars['String']['input']>;
   hourlyRate: Scalars['Int']['input'];
@@ -476,6 +526,7 @@ export type ModerateReviewInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptCleanerInvite: AcceptCleanerInviteResult;
   addCleanerResponse: Review;
   addServiceArea: ServiceArea;
   approveApplication: Application;
@@ -489,6 +540,7 @@ export type Mutation = {
   createAddress: Address;
   createAvailability: Availability;
   createBooking: Booking;
+  createCleanerInvite: CleanerInviteResult;
   createCleanerProfile: CleanerProfile;
   createPayoutBatch: PayoutBatch;
   createReview: Review;
@@ -505,6 +557,7 @@ export type Mutation = {
   moderateReview: Review;
   processPayoutBatch: PayoutBatch;
   rejectApplication: Application;
+  revokeCleanerInvite: CleanerInvite;
   setDefaultAddress: Address;
   signOut: Scalars['Void']['output'];
   startBooking: Booking;
@@ -521,6 +574,11 @@ export type Mutation = {
   updateServiceArea: ServiceArea;
   updateServiceDefinition: ServiceDefinition;
   updateUserRole: User;
+};
+
+
+export type MutationAcceptCleanerInviteArgs = {
+  token: Scalars['String']['input'];
 };
 
 
@@ -589,6 +647,11 @@ export type MutationCreateAvailabilityArgs = {
 
 export type MutationCreateBookingArgs = {
   input: CreateBookingInput;
+};
+
+
+export type MutationCreateCleanerInviteArgs = {
+  input?: InputMaybe<CreateCleanerInviteInput>;
 };
 
 
@@ -661,6 +724,11 @@ export type MutationProcessPayoutBatchArgs = {
 export type MutationRejectApplicationArgs = {
   applicationId: Scalars['ID']['input'];
   reason?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationRevokeCleanerInviteArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -775,6 +843,7 @@ export type Query = {
   availableCleaners: Array<CleanerProfile>;
   booking?: Maybe<Booking>;
   calculateServicePrice: ServicePriceCalculation;
+  cleanerInvite?: Maybe<CleanerInvite>;
   cleanerProfile?: Maybe<CleanerProfile>;
   cleanerProfileByUserId?: Maybe<CleanerProfile>;
   cleanersByPostalCode: Array<CleanerProfile>;
@@ -790,6 +859,8 @@ export type Query = {
   myBookings: BookingConnection;
   myCleanerProfile?: Maybe<CleanerProfile>;
   myCompany?: Maybe<Company>;
+  myCompanyCleaners: Array<CleanerProfile>;
+  myCompanyInvites: Array<CleanerInvite>;
   myDefaultAddress?: Maybe<Address>;
   myEarnings: CleanerEarnings;
   myJobs: BookingConnection;
@@ -814,6 +885,7 @@ export type Query = {
   transactionsByBooking: Array<Transaction>;
   transactionsDueForPayout: Array<Transaction>;
   upcomingBookings: Array<Booking>;
+  validateCleanerInviteToken: ValidateCleanerInviteResult;
 };
 
 
@@ -884,6 +956,11 @@ export type QueryBookingArgs = {
 
 export type QueryCalculateServicePriceArgs = {
   input: CalculateServicePriceInput;
+};
+
+
+export type QueryCleanerInviteArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -1053,6 +1130,11 @@ export type QueryTransactionsDueForPayoutArgs = {
 
 export type QueryUpcomingBookingsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryValidateCleanerInviteTokenArgs = {
+  token: Scalars['String']['input'];
 };
 
 export enum RecurrencePattern {
@@ -1404,6 +1486,14 @@ export enum UserRole {
   RejectedCompanyAdmin = 'REJECTED_COMPANY_ADMIN'
 }
 
+export type ValidateCleanerInviteResult = {
+  __typename?: 'ValidateCleanerInviteResult';
+  company?: Maybe<Company>;
+  errorMessage?: Maybe<Scalars['String']['output']>;
+  invite?: Maybe<CleanerInvite>;
+  valid: Scalars['Boolean']['output'];
+};
+
 export type SubmitApplicationMutationVariables = Exact<{
   input: SubmitApplicationInput;
 }>;
@@ -1463,6 +1553,75 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, pendingCleanerApplication?: { __typename?: 'Application', id: string, status: ApplicationStatus, applicationType: ApplicationType, createdAt: string, rejectionReason?: string | null } | null } | null };
+
+export type ValidateCleanerInviteTokenQueryVariables = Exact<{
+  token: Scalars['String']['input'];
+}>;
+
+
+export type ValidateCleanerInviteTokenQuery = { __typename?: 'Query', validateCleanerInviteToken: { __typename?: 'ValidateCleanerInviteResult', valid: boolean, errorMessage?: string | null, invite?: { __typename?: 'CleanerInvite', id: string, token: string, email?: string | null, message?: string | null, status: CleanerInviteStatus, expiresAt: string, createdAt: string } | null, company?: { __typename?: 'Company', id: string, companyName: string, companyCity: string, businessType?: string | null } | null } };
+
+export type MyCompanyInvitesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCompanyInvitesQuery = { __typename?: 'Query', myCompanyInvites: Array<{ __typename?: 'CleanerInvite', id: string, token: string, email?: string | null, message?: string | null, status: CleanerInviteStatus, acceptedAt?: string | null, expiresAt: string, createdAt: string, acceptedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null }> };
+
+export type MyCompanyCleanersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCompanyCleanersQuery = { __typename?: 'Query', myCompanyCleaners: Array<{ __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, hourlyRate: number, totalBookings: number, completedBookings: number, averageRating: number, totalReviews: number, isActive: boolean, isVerified: boolean, createdAt: string, user: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+
+export type CleanerInviteQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type CleanerInviteQuery = { __typename?: 'Query', cleanerInvite?: { __typename?: 'CleanerInvite', id: string, token: string, email?: string | null, message?: string | null, status: CleanerInviteStatus, acceptedAt?: string | null, expiresAt: string, createdAt: string, company: { __typename?: 'Company', id: string, companyName: string }, createdBy: { __typename?: 'User', id: string, displayName: string }, acceptedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null } | null };
+
+export type CreateCleanerInviteMutationVariables = Exact<{
+  input?: InputMaybe<CreateCleanerInviteInput>;
+}>;
+
+
+export type CreateCleanerInviteMutation = { __typename?: 'Mutation', createCleanerInvite: { __typename?: 'CleanerInviteResult', inviteUrl: string, invite: { __typename?: 'CleanerInvite', id: string, token: string, email?: string | null, message?: string | null, status: CleanerInviteStatus, expiresAt: string, createdAt: string } } };
+
+export type AcceptCleanerInviteMutationVariables = Exact<{
+  token: Scalars['String']['input'];
+}>;
+
+
+export type AcceptCleanerInviteMutation = { __typename?: 'Mutation', acceptCleanerInvite: { __typename?: 'AcceptCleanerInviteResult', success: boolean, user: { __typename?: 'User', id: string, displayName: string, email: string, role: UserRole }, company: { __typename?: 'Company', id: string, companyName: string } } };
+
+export type RevokeCleanerInviteMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type RevokeCleanerInviteMutation = { __typename?: 'Mutation', revokeCleanerInvite: { __typename?: 'CleanerInvite', id: string, status: CleanerInviteStatus } };
+
+export type MyCleanerProfileQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCleanerProfileQuery = { __typename?: 'Query', myCleanerProfile?: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, hourlyRate: number, isActive: boolean, isVerified: boolean, isAvailableToday: boolean, averageRating: number, totalReviews: number, totalBookings: number, completedBookings: number, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string, travelFee: number, isPreferred: boolean }> } | null };
+
+export type TierRateRangesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TierRateRangesQuery = { __typename?: 'Query', tierRateRanges: Array<{ __typename?: 'TierRateRange', tier: CleanerTier, minRate: number, maxRate: number }> };
+
+export type CreateCleanerProfileMutationVariables = Exact<{
+  input: CreateCleanerProfileInput;
+}>;
+
+
+export type CreateCleanerProfileMutation = { __typename?: 'Mutation', createCleanerProfile: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, tier: CleanerTier, hourlyRate: number, isActive: boolean, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string }> } };
+
+export type UpdateCleanerProfileMutationVariables = Exact<{
+  input: UpdateCleanerProfileInput;
+}>;
+
+
+export type UpdateCleanerProfileMutation = { __typename?: 'Mutation', updateCleanerProfile: { __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, hourlyRate: number, isActive: boolean, isAvailableToday: boolean } };
 
 export type MyCompanyQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1911,6 +2070,541 @@ export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
 export type CurrentUserSuspenseQueryHookResult = ReturnType<typeof useCurrentUserSuspenseQuery>;
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
+export const ValidateCleanerInviteTokenDocument = gql`
+    query ValidateCleanerInviteToken($token: String!) {
+  validateCleanerInviteToken(token: $token) {
+    valid
+    invite {
+      id
+      token
+      email
+      message
+      status
+      expiresAt
+      createdAt
+    }
+    company {
+      id
+      companyName
+      companyCity
+      businessType
+    }
+    errorMessage
+  }
+}
+    `;
+
+/**
+ * __useValidateCleanerInviteTokenQuery__
+ *
+ * To run a query within a React component, call `useValidateCleanerInviteTokenQuery` and pass it any options that fit your needs.
+ * When your component renders, `useValidateCleanerInviteTokenQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useValidateCleanerInviteTokenQuery({
+ *   variables: {
+ *      token: // value for 'token'
+ *   },
+ * });
+ */
+export function useValidateCleanerInviteTokenQuery(baseOptions: Apollo.QueryHookOptions<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables> & ({ variables: ValidateCleanerInviteTokenQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>(ValidateCleanerInviteTokenDocument, options);
+      }
+export function useValidateCleanerInviteTokenLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>(ValidateCleanerInviteTokenDocument, options);
+        }
+export function useValidateCleanerInviteTokenSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>(ValidateCleanerInviteTokenDocument, options);
+        }
+export type ValidateCleanerInviteTokenQueryHookResult = ReturnType<typeof useValidateCleanerInviteTokenQuery>;
+export type ValidateCleanerInviteTokenLazyQueryHookResult = ReturnType<typeof useValidateCleanerInviteTokenLazyQuery>;
+export type ValidateCleanerInviteTokenSuspenseQueryHookResult = ReturnType<typeof useValidateCleanerInviteTokenSuspenseQuery>;
+export type ValidateCleanerInviteTokenQueryResult = Apollo.QueryResult<ValidateCleanerInviteTokenQuery, ValidateCleanerInviteTokenQueryVariables>;
+export const MyCompanyInvitesDocument = gql`
+    query MyCompanyInvites {
+  myCompanyInvites {
+    id
+    token
+    email
+    message
+    status
+    acceptedBy {
+      id
+      displayName
+      email
+    }
+    acceptedAt
+    expiresAt
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useMyCompanyInvitesQuery__
+ *
+ * To run a query within a React component, call `useMyCompanyInvitesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyCompanyInvitesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyCompanyInvitesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyCompanyInvitesQuery(baseOptions?: Apollo.QueryHookOptions<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>(MyCompanyInvitesDocument, options);
+      }
+export function useMyCompanyInvitesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>(MyCompanyInvitesDocument, options);
+        }
+export function useMyCompanyInvitesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>(MyCompanyInvitesDocument, options);
+        }
+export type MyCompanyInvitesQueryHookResult = ReturnType<typeof useMyCompanyInvitesQuery>;
+export type MyCompanyInvitesLazyQueryHookResult = ReturnType<typeof useMyCompanyInvitesLazyQuery>;
+export type MyCompanyInvitesSuspenseQueryHookResult = ReturnType<typeof useMyCompanyInvitesSuspenseQuery>;
+export type MyCompanyInvitesQueryResult = Apollo.QueryResult<MyCompanyInvitesQuery, MyCompanyInvitesQueryVariables>;
+export const MyCompanyCleanersDocument = gql`
+    query MyCompanyCleaners {
+  myCompanyCleaners {
+    id
+    bio
+    profilePicture
+    tier
+    hourlyRate
+    totalBookings
+    completedBookings
+    averageRating
+    totalReviews
+    isActive
+    isVerified
+    user {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useMyCompanyCleanersQuery__
+ *
+ * To run a query within a React component, call `useMyCompanyCleanersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyCompanyCleanersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyCompanyCleanersQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyCompanyCleanersQuery(baseOptions?: Apollo.QueryHookOptions<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>(MyCompanyCleanersDocument, options);
+      }
+export function useMyCompanyCleanersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>(MyCompanyCleanersDocument, options);
+        }
+export function useMyCompanyCleanersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>(MyCompanyCleanersDocument, options);
+        }
+export type MyCompanyCleanersQueryHookResult = ReturnType<typeof useMyCompanyCleanersQuery>;
+export type MyCompanyCleanersLazyQueryHookResult = ReturnType<typeof useMyCompanyCleanersLazyQuery>;
+export type MyCompanyCleanersSuspenseQueryHookResult = ReturnType<typeof useMyCompanyCleanersSuspenseQuery>;
+export type MyCompanyCleanersQueryResult = Apollo.QueryResult<MyCompanyCleanersQuery, MyCompanyCleanersQueryVariables>;
+export const CleanerInviteDocument = gql`
+    query CleanerInvite($id: ID!) {
+  cleanerInvite(id: $id) {
+    id
+    token
+    email
+    message
+    status
+    company {
+      id
+      companyName
+    }
+    createdBy {
+      id
+      displayName
+    }
+    acceptedBy {
+      id
+      displayName
+      email
+    }
+    acceptedAt
+    expiresAt
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useCleanerInviteQuery__
+ *
+ * To run a query within a React component, call `useCleanerInviteQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCleanerInviteQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCleanerInviteQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useCleanerInviteQuery(baseOptions: Apollo.QueryHookOptions<CleanerInviteQuery, CleanerInviteQueryVariables> & ({ variables: CleanerInviteQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CleanerInviteQuery, CleanerInviteQueryVariables>(CleanerInviteDocument, options);
+      }
+export function useCleanerInviteLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CleanerInviteQuery, CleanerInviteQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CleanerInviteQuery, CleanerInviteQueryVariables>(CleanerInviteDocument, options);
+        }
+export function useCleanerInviteSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CleanerInviteQuery, CleanerInviteQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CleanerInviteQuery, CleanerInviteQueryVariables>(CleanerInviteDocument, options);
+        }
+export type CleanerInviteQueryHookResult = ReturnType<typeof useCleanerInviteQuery>;
+export type CleanerInviteLazyQueryHookResult = ReturnType<typeof useCleanerInviteLazyQuery>;
+export type CleanerInviteSuspenseQueryHookResult = ReturnType<typeof useCleanerInviteSuspenseQuery>;
+export type CleanerInviteQueryResult = Apollo.QueryResult<CleanerInviteQuery, CleanerInviteQueryVariables>;
+export const CreateCleanerInviteDocument = gql`
+    mutation CreateCleanerInvite($input: CreateCleanerInviteInput) {
+  createCleanerInvite(input: $input) {
+    invite {
+      id
+      token
+      email
+      message
+      status
+      expiresAt
+      createdAt
+    }
+    inviteUrl
+  }
+}
+    `;
+export type CreateCleanerInviteMutationFn = Apollo.MutationFunction<CreateCleanerInviteMutation, CreateCleanerInviteMutationVariables>;
+
+/**
+ * __useCreateCleanerInviteMutation__
+ *
+ * To run a mutation, you first call `useCreateCleanerInviteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCleanerInviteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCleanerInviteMutation, { data, loading, error }] = useCreateCleanerInviteMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCleanerInviteMutation(baseOptions?: Apollo.MutationHookOptions<CreateCleanerInviteMutation, CreateCleanerInviteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCleanerInviteMutation, CreateCleanerInviteMutationVariables>(CreateCleanerInviteDocument, options);
+      }
+export type CreateCleanerInviteMutationHookResult = ReturnType<typeof useCreateCleanerInviteMutation>;
+export type CreateCleanerInviteMutationResult = Apollo.MutationResult<CreateCleanerInviteMutation>;
+export type CreateCleanerInviteMutationOptions = Apollo.BaseMutationOptions<CreateCleanerInviteMutation, CreateCleanerInviteMutationVariables>;
+export const AcceptCleanerInviteDocument = gql`
+    mutation AcceptCleanerInvite($token: String!) {
+  acceptCleanerInvite(token: $token) {
+    success
+    user {
+      id
+      displayName
+      email
+      role
+    }
+    company {
+      id
+      companyName
+    }
+  }
+}
+    `;
+export type AcceptCleanerInviteMutationFn = Apollo.MutationFunction<AcceptCleanerInviteMutation, AcceptCleanerInviteMutationVariables>;
+
+/**
+ * __useAcceptCleanerInviteMutation__
+ *
+ * To run a mutation, you first call `useAcceptCleanerInviteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAcceptCleanerInviteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [acceptCleanerInviteMutation, { data, loading, error }] = useAcceptCleanerInviteMutation({
+ *   variables: {
+ *      token: // value for 'token'
+ *   },
+ * });
+ */
+export function useAcceptCleanerInviteMutation(baseOptions?: Apollo.MutationHookOptions<AcceptCleanerInviteMutation, AcceptCleanerInviteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AcceptCleanerInviteMutation, AcceptCleanerInviteMutationVariables>(AcceptCleanerInviteDocument, options);
+      }
+export type AcceptCleanerInviteMutationHookResult = ReturnType<typeof useAcceptCleanerInviteMutation>;
+export type AcceptCleanerInviteMutationResult = Apollo.MutationResult<AcceptCleanerInviteMutation>;
+export type AcceptCleanerInviteMutationOptions = Apollo.BaseMutationOptions<AcceptCleanerInviteMutation, AcceptCleanerInviteMutationVariables>;
+export const RevokeCleanerInviteDocument = gql`
+    mutation RevokeCleanerInvite($id: ID!) {
+  revokeCleanerInvite(id: $id) {
+    id
+    status
+  }
+}
+    `;
+export type RevokeCleanerInviteMutationFn = Apollo.MutationFunction<RevokeCleanerInviteMutation, RevokeCleanerInviteMutationVariables>;
+
+/**
+ * __useRevokeCleanerInviteMutation__
+ *
+ * To run a mutation, you first call `useRevokeCleanerInviteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRevokeCleanerInviteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [revokeCleanerInviteMutation, { data, loading, error }] = useRevokeCleanerInviteMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useRevokeCleanerInviteMutation(baseOptions?: Apollo.MutationHookOptions<RevokeCleanerInviteMutation, RevokeCleanerInviteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RevokeCleanerInviteMutation, RevokeCleanerInviteMutationVariables>(RevokeCleanerInviteDocument, options);
+      }
+export type RevokeCleanerInviteMutationHookResult = ReturnType<typeof useRevokeCleanerInviteMutation>;
+export type RevokeCleanerInviteMutationResult = Apollo.MutationResult<RevokeCleanerInviteMutation>;
+export type RevokeCleanerInviteMutationOptions = Apollo.BaseMutationOptions<RevokeCleanerInviteMutation, RevokeCleanerInviteMutationVariables>;
+export const MyCleanerProfileDocument = gql`
+    query MyCleanerProfile {
+  myCleanerProfile {
+    id
+    userId
+    companyId
+    bio
+    profilePicture
+    tier
+    hourlyRate
+    isActive
+    isVerified
+    isAvailableToday
+    averageRating
+    totalReviews
+    totalBookings
+    completedBookings
+    createdAt
+    company {
+      id
+      companyName
+    }
+    serviceAreas {
+      id
+      city
+      neighborhood
+      postalCode
+      travelFee
+      isPreferred
+    }
+  }
+}
+    `;
+
+/**
+ * __useMyCleanerProfileQuery__
+ *
+ * To run a query within a React component, call `useMyCleanerProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyCleanerProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyCleanerProfileQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyCleanerProfileQuery(baseOptions?: Apollo.QueryHookOptions<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>(MyCleanerProfileDocument, options);
+      }
+export function useMyCleanerProfileLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>(MyCleanerProfileDocument, options);
+        }
+export function useMyCleanerProfileSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>(MyCleanerProfileDocument, options);
+        }
+export type MyCleanerProfileQueryHookResult = ReturnType<typeof useMyCleanerProfileQuery>;
+export type MyCleanerProfileLazyQueryHookResult = ReturnType<typeof useMyCleanerProfileLazyQuery>;
+export type MyCleanerProfileSuspenseQueryHookResult = ReturnType<typeof useMyCleanerProfileSuspenseQuery>;
+export type MyCleanerProfileQueryResult = Apollo.QueryResult<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>;
+export const TierRateRangesDocument = gql`
+    query TierRateRanges {
+  tierRateRanges {
+    tier
+    minRate
+    maxRate
+  }
+}
+    `;
+
+/**
+ * __useTierRateRangesQuery__
+ *
+ * To run a query within a React component, call `useTierRateRangesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTierRateRangesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useTierRateRangesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useTierRateRangesQuery(baseOptions?: Apollo.QueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
+      }
+export function useTierRateRangesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
+        }
+export function useTierRateRangesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
+        }
+export type TierRateRangesQueryHookResult = ReturnType<typeof useTierRateRangesQuery>;
+export type TierRateRangesLazyQueryHookResult = ReturnType<typeof useTierRateRangesLazyQuery>;
+export type TierRateRangesSuspenseQueryHookResult = ReturnType<typeof useTierRateRangesSuspenseQuery>;
+export type TierRateRangesQueryResult = Apollo.QueryResult<TierRateRangesQuery, TierRateRangesQueryVariables>;
+export const CreateCleanerProfileDocument = gql`
+    mutation CreateCleanerProfile($input: CreateCleanerProfileInput!) {
+  createCleanerProfile(input: $input) {
+    id
+    userId
+    companyId
+    bio
+    tier
+    hourlyRate
+    isActive
+    createdAt
+    company {
+      id
+      companyName
+    }
+    serviceAreas {
+      id
+      city
+      neighborhood
+      postalCode
+    }
+  }
+}
+    `;
+export type CreateCleanerProfileMutationFn = Apollo.MutationFunction<CreateCleanerProfileMutation, CreateCleanerProfileMutationVariables>;
+
+/**
+ * __useCreateCleanerProfileMutation__
+ *
+ * To run a mutation, you first call `useCreateCleanerProfileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCleanerProfileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCleanerProfileMutation, { data, loading, error }] = useCreateCleanerProfileMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCleanerProfileMutation(baseOptions?: Apollo.MutationHookOptions<CreateCleanerProfileMutation, CreateCleanerProfileMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCleanerProfileMutation, CreateCleanerProfileMutationVariables>(CreateCleanerProfileDocument, options);
+      }
+export type CreateCleanerProfileMutationHookResult = ReturnType<typeof useCreateCleanerProfileMutation>;
+export type CreateCleanerProfileMutationResult = Apollo.MutationResult<CreateCleanerProfileMutation>;
+export type CreateCleanerProfileMutationOptions = Apollo.BaseMutationOptions<CreateCleanerProfileMutation, CreateCleanerProfileMutationVariables>;
+export const UpdateCleanerProfileDocument = gql`
+    mutation UpdateCleanerProfile($input: UpdateCleanerProfileInput!) {
+  updateCleanerProfile(input: $input) {
+    id
+    bio
+    profilePicture
+    hourlyRate
+    isActive
+    isAvailableToday
+  }
+}
+    `;
+export type UpdateCleanerProfileMutationFn = Apollo.MutationFunction<UpdateCleanerProfileMutation, UpdateCleanerProfileMutationVariables>;
+
+/**
+ * __useUpdateCleanerProfileMutation__
+ *
+ * To run a mutation, you first call `useUpdateCleanerProfileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateCleanerProfileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateCleanerProfileMutation, { data, loading, error }] = useUpdateCleanerProfileMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateCleanerProfileMutation(baseOptions?: Apollo.MutationHookOptions<UpdateCleanerProfileMutation, UpdateCleanerProfileMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateCleanerProfileMutation, UpdateCleanerProfileMutationVariables>(UpdateCleanerProfileDocument, options);
+      }
+export type UpdateCleanerProfileMutationHookResult = ReturnType<typeof useUpdateCleanerProfileMutation>;
+export type UpdateCleanerProfileMutationResult = Apollo.MutationResult<UpdateCleanerProfileMutation>;
+export type UpdateCleanerProfileMutationOptions = Apollo.BaseMutationOptions<UpdateCleanerProfileMutation, UpdateCleanerProfileMutationVariables>;
 export const MyCompanyDocument = gql`
     query MyCompany {
   myCompany {

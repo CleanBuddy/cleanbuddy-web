@@ -58,7 +58,10 @@ export function GoogleSignInButton({
                         userData.currentUser.role,
                         authIntent
                     );
-                    localStorage.removeItem("authIntent");
+                    // Don't clear authIntent for invite - the invite page needs it
+                    if (authIntent !== "invite") {
+                        localStorage.removeItem("authIntent");
+                    }
                     router.push(destination);
                 }
             }

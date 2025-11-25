@@ -1,0 +1,129 @@
+# Cleaner Invite Queries
+
+query ValidateCleanerInviteToken($token: String!) {
+  validateCleanerInviteToken(token: $token) {
+    valid
+    invite {
+      id
+      token
+      email
+      message
+      status
+      expiresAt
+      createdAt
+    }
+    company {
+      id
+      companyName
+      companyCity
+      businessType
+    }
+    errorMessage
+  }
+}
+
+query MyCompanyInvites {
+  myCompanyInvites {
+    id
+    token
+    email
+    message
+    status
+    acceptedBy {
+      id
+      displayName
+      email
+    }
+    acceptedAt
+    expiresAt
+    createdAt
+  }
+}
+
+query MyCompanyCleaners {
+  myCompanyCleaners {
+    id
+    bio
+    profilePicture
+    tier
+    hourlyRate
+    totalBookings
+    completedBookings
+    averageRating
+    totalReviews
+    isActive
+    isVerified
+    user {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+
+query CleanerInvite($id: ID!) {
+  cleanerInvite(id: $id) {
+    id
+    token
+    email
+    message
+    status
+    company {
+      id
+      companyName
+    }
+    createdBy {
+      id
+      displayName
+    }
+    acceptedBy {
+      id
+      displayName
+      email
+    }
+    acceptedAt
+    expiresAt
+    createdAt
+  }
+}
+
+# Cleaner Invite Mutations
+
+mutation CreateCleanerInvite($input: CreateCleanerInviteInput) {
+  createCleanerInvite(input: $input) {
+    invite {
+      id
+      token
+      email
+      message
+      status
+      expiresAt
+      createdAt
+    }
+    inviteUrl
+  }
+}
+
+mutation AcceptCleanerInvite($token: String!) {
+  acceptCleanerInvite(token: $token) {
+    success
+    user {
+      id
+      displayName
+      email
+      role
+    }
+    company {
+      id
+      companyName
+    }
+  }
+}
+
+mutation RevokeCleanerInvite($id: ID!) {
+  revokeCleanerInvite(id: $id) {
+    id
+    status
+  }
+}
