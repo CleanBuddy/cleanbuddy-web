@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { User, Star, Award, MapPin, Phone, Mail } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
@@ -19,7 +20,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (user?.role !== "cleaner") {
+  if (user?.role !== UserRole.Cleaner) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

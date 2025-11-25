@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, FileText, Building2, User as UserIcon, Eye } from "lucide-react";
 import { DocumentViewer } from "@/components/document-viewer";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 interface CompanyInfo {
   companyName: string;
@@ -59,7 +60,7 @@ export default function ApplicationsPage() {
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null);
 
   const { data, loading, error, refetch } = useQuery(PENDING_APPLICATIONS, {
-    skip: !user || user.role !== "global_admin",
+    skip: !user || user.role !== UserRole.GlobalAdmin,
   });
 
   const [approveApplication, { loading: approving }] = useMutation(APPROVE_APPLICATION, {
@@ -119,7 +120,7 @@ export default function ApplicationsPage() {
     });
   };
 
-  if (!user || user.role !== "global_admin") {
+  if (!user || user.role !== UserRole.GlobalAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md">

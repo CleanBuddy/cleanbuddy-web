@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreditCard, DollarSign, Clock, CheckCircle } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function PayoutsPage() {
   const { user, loading } = useCurrentUser();
@@ -19,7 +20,7 @@ export default function PayoutsPage() {
     );
   }
 
-  if (user?.role !== "global_admin" && user?.role !== "company_admin") {
+  if (user?.role !== UserRole.GlobalAdmin && user?.role !== UserRole.CompanyAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

@@ -22,6 +22,7 @@ import { usePathname } from "next/navigation";
 import { ApplicationStatus } from "@/components/application-status";
 import { useQuery } from "@apollo/client";
 import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
+import { ApplicationType, ApplicationStatus as ApplicationStatusEnum } from "@/lib/api/_gen/gql";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -57,7 +58,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   // Check if user has a pending cleaner application by querying applications
   const applications = applicationsData?.myApplications || [];
   const pendingCleanerApplication = applications.find(
-    (app: { applicationType: string; status: string }) => app.applicationType === "cleaner" && app.status === "pending"
+    (app: { applicationType: string; status: string }) => app.applicationType === ApplicationType.Cleaner && app.status === ApplicationStatusEnum.Pending
   );
 
   // If user has pending cleaner application, show application status instead of dashboard

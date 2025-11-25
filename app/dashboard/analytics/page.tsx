@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/components/providers/user-provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, TrendingUp, Users, Calendar, DollarSign } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function AnalyticsPage() {
   const { user, loading } = useCurrentUser();
@@ -17,7 +18,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (user?.role !== "global_admin" && user?.role !== "company_admin") {
+  if (user?.role !== UserRole.GlobalAdmin && user?.role !== UserRole.CompanyAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

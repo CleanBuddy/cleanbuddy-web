@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/components/providers/user-provider";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function AvailabilityPage() {
   const { user, loading } = useCurrentUser();
@@ -17,7 +18,7 @@ export default function AvailabilityPage() {
     );
   }
 
-  if (user?.role !== "cleaner") {
+  if (user?.role !== UserRole.Cleaner) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

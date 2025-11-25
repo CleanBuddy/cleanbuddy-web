@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
 import { SUBMIT_APPLICATION } from "@/lib/graphql/mutations/application-mutations";
-import { UserRole } from "@/lib/api/_gen/gql";
+import { UserRole, ApplicationType } from "@/lib/api/_gen/gql";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -216,7 +216,7 @@ export default function CleanerSignupPage() {
     await submitApplication({
       variables: {
         input: {
-          applicationType: "cleaner",
+          applicationType: ApplicationType.Cleaner,
           message,
           companyInfo,
           documents: {

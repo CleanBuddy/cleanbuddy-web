@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, TrendingUp, DollarSign, Calendar } from "lucide-react";
+import { UserRole } from "@/lib/api/_gen/gql";
 
 export default function EarningsPage() {
   const { user, loading } = useCurrentUser();
@@ -18,7 +19,7 @@ export default function EarningsPage() {
     );
   }
 
-  if (user?.role !== "cleaner") {
+  if (user?.role !== UserRole.Cleaner) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">

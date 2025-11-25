@@ -19,6 +19,7 @@ import { useDialog } from "@/components/providers/dialog-provider";
 import { UserSettingsDialogContent } from "@/components/dialogs/user-settings-dialog";
 import { signOut } from "@/lib/auth";
 import Link from "next/link";
+import { ApplicationStatus as ApplicationStatusEnum } from "@/lib/api/_gen/gql";
 
 interface ApplicationStatusProps {
   application: {
@@ -30,8 +31,8 @@ interface ApplicationStatusProps {
 }
 
 export function ApplicationStatus({ application }: ApplicationStatusProps) {
-  const isPending = application.status === "pending";
-  const isRejected = application.status === "rejected";
+  const isPending = application.status === ApplicationStatusEnum.Pending;
+  const isRejected = application.status === ApplicationStatusEnum.Rejected;
   const { user } = useCurrentUser();
   const { openDialog } = useDialog();
 

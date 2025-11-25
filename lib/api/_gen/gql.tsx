@@ -83,14 +83,14 @@ export type ApplicationDocumentsInput = {
 };
 
 export enum ApplicationStatus {
-  Approved = 'approved',
-  Pending = 'pending',
-  Rejected = 'rejected'
+  Approved = 'APPROVED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
 }
 
 export enum ApplicationType {
-  Cleaner = 'cleaner',
-  CompanyAdmin = 'company_admin'
+  Cleaner = 'CLEANER',
+  CompanyAdmin = 'COMPANY_ADMIN'
 }
 
 export enum AuthIdentityKind {
