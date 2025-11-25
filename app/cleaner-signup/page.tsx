@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
 import { SUBMIT_APPLICATION } from "@/lib/graphql/mutations/application-mutations";
-import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
+import { UserRole } from "@/lib/api/_gen/gql";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,41 +45,54 @@ export default function CleanerSignupPage() {
   const [currentStep, setCurrentStep] = useState<FormStep>("company");
   const [message, setMessage] = useState("");
 
-  // Query user's applications to check for pending cleaner application
-  const { data: applicationsData, loading: applicationsLoading } = useQuery(MY_APPLICATIONS, {
-    skip: !user,
-  });
-
   // Redirect if user already has pending application or is already a cleaner
   useEffect(() => {
-    if (!userLoading && !applicationsLoading && user) {
-      const applications = applicationsData?.myApplications || [];
-      const hasPendingCleanerApplication = applications.some(
-        (app: { applicationType: string; status: string }) =>
-          app.applicationType === "cleaner" && app.status === "pending"
-      );
+    if (!userLoading && user) {
+      // If user is CLIENT, redirect to home with message
+      if (user.role === UserRole.Client) {
+        toast({
+          title: "Start Your Application",
+          description: "Click 'Become a Cleaner' to begin the application process.",
+        });
+        router.push("/");
+        return;
+      }
 
-      // If user has a pending application, redirect to dashboard (which will show ApplicationStatus)
-      if (hasPendingCleanerApplication) {
+      // If user has already submitted application (PENDING_CLEANER), redirect to dashboard
+      if (user.role === UserRole.PendingCleaner) {
         toast({
           title: "Application Already Submitted",
-          description: "You already have a pending cleaner application under review.",
+          description: "Your application is under review. Check your dashboard for status.",
         });
         router.push("/dashboard");
         return;
       }
 
       // If user is already an approved cleaner, redirect to dashboard
-      if (user.role === "cleaner") {
+      if (user.role === UserRole.Cleaner) {
         toast({
           title: "Already a Cleaner",
-          description: "You're already registered as a cleaner.",
+          description: "You're already approved as a cleaner!",
         });
         router.push("/dashboard");
         return;
       }
+
+      // If user has a rejected application (REJECTED_CLEANER)
+      if (user.role === UserRole.RejectedCleaner) {
+        toast({
+          title: "Reapplication Available",
+          description: "Please contact support before submitting a new application.",
+          variant: "destructive",
+        });
+        router.push("/dashboard");
+        return;
+      }
+
+      // If user has PENDING_APPLICATION role, allow them to continue with form
+      // No redirect needed - this is the correct state for this page
     }
-  }, [user, userLoading, applicationsData, applicationsLoading, router, toast]);
+  }, [user, userLoading, router, toast]);
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
     companyName: "",
@@ -101,18 +114,19 @@ export default function CleanerSignupPage() {
   });
 
   const [submitApplication, { loading }] = useMutation(SUBMIT_APPLICATION, {
+    refetchQueries: ['CurrentUser'], // Refetch the currentUser query to update the cache
+    awaitRefetchQueries: true, // Wait for refetch to complete before onCompleted
     onCompleted: async () => {
       toast({
         title: "Application Submitted",
         description: "Your cleaner application has been submitted for review. We'll notify you once it's been processed.",
       });
 
-      // Refetch user data to get the pending application
+      // Refetch user data from context as well
       await refetch();
 
-      // The useEffect hook will detect the pending application and redirect to dashboard
-      // which will then show the ApplicationStatus component
-      router.push("/dashboard");
+      // Redirect to home page which will show the "Application Under Review" section
+      router.push("/");
     },
     onError: (error) => {
       toast({

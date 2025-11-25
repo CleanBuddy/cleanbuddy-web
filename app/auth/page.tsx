@@ -4,15 +4,17 @@ import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
+import { useCurrentUserQuery, UserRole } from "@/lib/api/_gen/gql";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
+import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
 
 function AuthPageContent() {
   const { data, loading } = useCurrentUserQuery();
   const router = useRouter();
   const searchParams = useSearchParams();
   const intent = searchParams.get("intent");
+  const { getPostAuthRedirect, initiateCleanerFlow } = useAuthFlow();
 
   // Store intent in localStorage before authentication
   useEffect(() => {
@@ -21,19 +23,30 @@ function AuthPageContent() {
     }
   }, [intent]);
 
-  // Redirect to dashboard if user is already authenticated
+  // Redirect authenticated users
   useEffect(() => {
     if (data?.currentUser && !loading) {
-      // Check if there's a stored intent
       const storedIntent = localStorage.getItem("authIntent");
-      if (storedIntent === "cleaner") {
+
+      // If CLIENT wants to become cleaner, initiate upgrade flow
+      if (
+        storedIntent === "cleaner" &&
+        data.currentUser.role === UserRole.Client
+      ) {
         localStorage.removeItem("authIntent");
-        router.push("/cleaner-signup");
-      } else {
-        router.push("/dashboard");
+        initiateCleanerFlow();
+        return;
       }
+
+      // For all other cases, use centralized redirect logic
+      const destination = getPostAuthRedirect(
+        data.currentUser.role,
+        storedIntent
+      );
+      localStorage.removeItem("authIntent");
+      router.push(destination);
     }
-  }, [data?.currentUser, loading, router]);
+  }, [data?.currentUser, loading, router, initiateCleanerFlow, getPostAuthRedirect]);
 
   // Show loading skeleton while checking authentication
   if (loading) {

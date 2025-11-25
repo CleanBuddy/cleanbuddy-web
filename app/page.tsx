@@ -4,30 +4,35 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle, Zap, Users, Shield, Clock } from "lucide-react";
-import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
-import { useQuery } from "@apollo/client";
-import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
+import { ArrowRight, CheckCircle, Zap, Users, Shield, Clock, FileText } from "lucide-react";
+import { useCurrentUserQuery, UserRole } from "@/lib/api/_gen/gql";
+import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { data, loading } = useCurrentUserQuery();
   const user = data?.currentUser;
   const isAuthenticated = !!user && !loading;
-
-  // Query user's applications to check for pending cleaner application
-  const { data: applicationsData } = useQuery(MY_APPLICATIONS, {
-    skip: !user,
-  });
-
-  const applications = applicationsData?.myApplications || [];
-  const hasPendingCleanerApplication = applications.some(
-    (app: { applicationType: string; status: string }) => app.applicationType === "cleaner" && app.status === "pending"
-  );
+  const router = useRouter();
+  const { initiateCleanerFlow } = useAuthFlow();
 
   const userRole = user?.role;
-  const isClient = userRole === "CLIENT" || !userRole;
-  const isCleaner = userRole === "CLEANER";
-  const isAdmin = userRole === "GLOBAL_ADMIN" || userRole === "COMPANY_ADMIN";
+  const isClient = userRole === UserRole.Client || !userRole;
+  const isPendingApplication = userRole === UserRole.PendingApplication;
+  const isPendingCleaner = userRole === UserRole.PendingCleaner;
+  const isRejectedCleaner = userRole === UserRole.RejectedCleaner;
+  const isCleaner = userRole === UserRole.Cleaner;
+  const isAdmin = userRole === UserRole.GlobalAdmin || userRole === UserRole.CompanyAdmin;
+
+  const handleBecomeCleanerClick = async () => {
+    if (isAuthenticated && isClient) {
+      // User is logged in as CLIENT, upgrade them
+      await initiateCleanerFlow();
+    } else {
+      // Not logged in, redirect to auth with intent
+      router.push("/auth?intent=cleaner");
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -48,12 +53,10 @@ export default function Home() {
               Contact
             </Link>
 
-            {/* Show "Become a Cleaner" only for non-authenticated users or clients without pending application */}
-            {(!isAuthenticated || (isClient && !hasPendingCleanerApplication)) && (
-              <Button asChild variant="outline" size="sm" className="md:size-default">
-                <Link href="/auth?intent=cleaner">
-                  Become a Cleaner
-                </Link>
+            {/* Show "Become a Cleaner" only for non-authenticated users or clients */}
+            {(!isAuthenticated || isClient) && (
+              <Button onClick={handleBecomeCleanerClick} variant="outline" size="sm" className="md:size-default">
+                Become a Cleaner
               </Button>
             )}
 
@@ -66,7 +69,7 @@ export default function Home() {
               <Button asChild variant="default" size="sm" className="md:size-default relative">
                 <Link href="/dashboard">
                   Dashboard
-                  {hasPendingCleanerApplication && (
+                  {isPendingCleaner && (
                     <Badge variant="secondary" className="ml-2 text-xs">
                       Pending
                     </Badge>
@@ -82,7 +85,7 @@ export default function Home() {
       <section className="py-12 md:py-20 px-4">
         <div className="container mx-auto text-center max-w-4xl">
           {/* Hero content for non-authenticated users or clients */}
-          {(!isAuthenticated || isClient) && !hasPendingCleanerApplication && (
+          {(!isAuthenticated || isClient) && (
             <>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
                 Your Home, Sparkling Clean. Effortlessly.
@@ -113,8 +116,29 @@ export default function Home() {
             </>
           )}
 
+          {/* Hero content for users who need to complete application */}
+          {isPendingApplication && (
+            <>
+              <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-full mb-6">
+                <FileText className="h-5 w-5" />
+                <span className="font-medium">Complete Your Application</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                Welcome to CleanBuddy!
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                You're almost there! Please complete your cleaner application to get started.
+              </p>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href="/cleaner-signup">
+                  Complete Application <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
+
           {/* Hero content for pending cleaner applicants */}
-          {hasPendingCleanerApplication && (
+          {isPendingCleaner && (
             <>
               <div className="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-full mb-6">
                 <Clock className="h-5 w-5" />
@@ -134,8 +158,36 @@ export default function Home() {
             </>
           )}
 
+          {/* Hero content for rejected cleaner applicants */}
+          {isRejectedCleaner && (
+            <>
+              <div className="inline-flex items-center gap-2 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-2 rounded-full mb-6">
+                <Clock className="h-5 w-5" />
+                <span className="font-medium">Application Not Approved</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                We Need to Talk
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                Unfortunately, your cleaner application was not approved. Please contact us to discuss the reason and next steps.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
+                <Button asChild size="lg" className="w-full sm:w-auto">
+                  <Link href="/contact">
+                    Contact Us <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Link href="/dashboard">
+                    View Application Details
+                  </Link>
+                </Button>
+              </div>
+            </>
+          )}
+
           {/* Hero content for cleaners */}
-          {isCleaner && !hasPendingCleanerApplication && (
+          {isCleaner && (
             <>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
                 Welcome Back, {user?.displayName?.split(" ")[0]}!
@@ -243,7 +295,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section - Only show for non-authenticated users or authenticated clients */}
-      {(!isAuthenticated || (isAuthenticated && isClient)) && !hasPendingCleanerApplication && (
+      {(!isAuthenticated || (isAuthenticated && isClient)) && (
         <section className="py-12 md:py-20 px-4 bg-primary text-primary-foreground">
           <div className="container mx-auto text-center max-w-3xl">
             <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Ready for a Cleaner Home?</h2>
@@ -267,9 +319,11 @@ export default function Home() {
             <Link href="/privacy" className="text-sm md:text-base hover:text-foreground">Privacy</Link>
             <Link href="/terms" className="text-sm md:text-base hover:text-foreground">Terms</Link>
             <Link href="/contact" className="text-sm md:text-base hover:text-foreground">Contact</Link>
-            {/* Show "Become a Cleaner" only for non-authenticated users or clients without pending application */}
-            {(!isAuthenticated || (isClient && !hasPendingCleanerApplication)) && (
-              <Link href="/auth?intent=cleaner" className="text-sm md:text-base hover:text-foreground">Become a Cleaner</Link>
+            {/* Show "Become a Cleaner" only for non-authenticated users or clients */}
+            {(!isAuthenticated || isClient) && (
+              <button onClick={handleBecomeCleanerClick} className="text-sm md:text-base hover:text-foreground">
+                Become a Cleaner
+              </button>
             )}
           </div>
           <p className="text-xs md:text-sm">&copy; 2025 CleanBuddy. All rights reserved.</p>

@@ -1,5 +1,5 @@
-mutation AuthWithIdentityProvider($code: String!, $kind: AuthIdentityKind!) {
-  authWithIdentityProvider(code: $code, kind: $kind) {
+mutation AuthWithIdentityProvider($code: String!, $kind: AuthIdentityKind!, $intent: String) {
+  authWithIdentityProvider(code: $code, kind: $kind, intent: $intent) {
     accessToken
     refreshToken
   }

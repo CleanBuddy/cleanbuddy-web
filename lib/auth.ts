@@ -73,10 +73,17 @@ export async function signOut() {
     // 2. Clear all cookies
     await clearTokens();
 
-    // 3. Clear all localStorage items
+    // 3. Clear all localStorage items EXCEPT authIntent
+    // Preserve authIntent so users can upgrade from CLIENT to CLEANER
+    const preservedAuthIntent = localStorage.getItem('authIntent');
     localStorage.removeItem('auth_return_url');
     localStorage.removeItem('accessToken');  // Legacy cleanup
     localStorage.removeItem('refreshToken'); // Legacy cleanup
+
+    // Restore authIntent if it was preserved
+    if (preservedAuthIntent) {
+      localStorage.setItem('authIntent', preservedAuthIntent);
+    }
 
     // 4. Reset Apollo cache and auth state
     await apolloClientInstance.resetStore();

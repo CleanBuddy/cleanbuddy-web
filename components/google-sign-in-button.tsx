@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useAuthWithIdentityProviderMutation, AuthIdentityKind } from "@/lib/api/_gen/gql";
-import { storeTokens, clearTokens } from "@/lib/auth";
+import { useAuthWithIdentityProviderMutation, AuthIdentityKind, CurrentUserDocument } from "@/lib/api/_gen/gql";
+import { storeTokens } from "@/lib/auth";
 import { useGoogleLogin } from "@react-oauth/google";
 import { Loader2Icon } from "lucide-react";
 import { apolloClient, isAuthenticatedVar } from "@/lib/apollo-client";
+import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
 
 interface GoogleSignInButtonProps {
     className?: string;
@@ -22,7 +23,7 @@ export function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [isClearing, setIsClearing] = useState(false);
+    const { getPostAuthRedirect } = useAuthFlow();
 
     const [authWithIdentityProvider] = useAuthWithIdentityProviderMutation();
 
@@ -30,43 +31,39 @@ export function GoogleSignInButton({
         setIsLoading(true);
 
         try {
+            const authIntent = localStorage.getItem("authIntent");
+
             const { data } = await authWithIdentityProvider({
                 variables: {
                     code: tokenResponse.code,
                     kind: AuthIdentityKind.GoogleOAuth2,
+                    intent: authIntent,
                 },
             });
 
             if (data?.authWithIdentityProvider) {
                 const { accessToken, refreshToken } = data.authWithIdentityProvider;
 
-                // IMPORTANT: Wait for tokens to be stored before proceeding
                 await storeTokens(accessToken, refreshToken);
-
-                // Reset Apollo cache to ensure fresh data is fetched after authentication
                 await apolloClient.resetStore();
+                isAuthenticatedVar(true);
 
-                // Check for cleaner intent
-                const authIntent = localStorage.getItem("authIntent");
-                let redirectTo: string;
+                const { data: userData } = await apolloClient.query({
+                    query: CurrentUserDocument,
+                    fetchPolicy: 'network-only',
+                });
 
-                if (authIntent === "cleaner") {
-                    // If applying as cleaner, redirect to application form
+                if (userData?.currentUser) {
+                    const destination = getPostAuthRedirect(
+                        userData.currentUser.role,
+                        authIntent
+                    );
                     localStorage.removeItem("authIntent");
-                    redirectTo = "/cleaner-signup";
-                } else {
-                    // Navigate to return URL or dashboard
-                    redirectTo = returnTo || localStorage.getItem("auth_return_url") || "/dashboard";
-                    localStorage.removeItem("auth_return_url");
+                    router.push(destination);
                 }
-
-                // Use window.location.href to force a full page reload
-                // This ensures cookies are properly set and auth state is fresh
-                window.location.href = redirectTo;
             }
         } catch (err) {
             console.error("Authentication error:", err);
-            // On error, fall back to auth page
             router.push("/auth");
         } finally {
             setIsLoading(false);
@@ -76,7 +73,6 @@ export function GoogleSignInButton({
     const handleGoogleError = (error?: any) => {
         // Ignore popup blocked errors - user might have intentionally closed it
         if (error?.type === 'popup_closed' || error?.error === 'popup_closed_by_user') {
-            console.log("Google authentication popup was closed");
             setIsLoading(false);
             return;
         }
@@ -99,49 +95,25 @@ export function GoogleSignInButton({
         redirect_uri: "postmessage",
     });
 
-    const handleClick = async () => {
-        try {
-            setIsClearing(true);
-
-            // Clear any existing tokens to prevent "session already associated" errors
-            // This ensures a clean authentication state before initiating OAuth flow
-            await clearTokens();
-
-            // Clear Apollo cache to remove any cached user data
-            await apolloClient.clearStore();
-
-            // Update authentication state
-            isAuthenticatedVar(false);
-
-            // Store return URL if provided
-            if (returnTo) {
-                localStorage.setItem("auth_return_url", returnTo);
-            }
-
-            // Small delay to ensure cleanup is complete before OAuth popup
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            setIsClearing(false);
-
-            // Trigger Google login popup
-            login();
-        } catch (error) {
-            console.error("Error during auth preparation:", error);
-            setIsClearing(false);
-            // Still try to login even if cleanup fails
-            login();
+    const handleClick = () => {
+        // Store return URL if provided
+        if (returnTo) {
+            localStorage.setItem("auth_return_url", returnTo);
         }
+
+        // Trigger Google login popup
+        login();
     };
 
     return (
         <Button
             size="lg"
             onClick={handleClick}
-            disabled={isLoading || isClearing}
+            disabled={isLoading}
             className={`h-12 sm:h-14 rounded-full pl-2 sm:pl-3 pr-6 sm:pr-8 text-base sm:text-lg font-medium bg-[#4285F4] hover:bg-[#3367D6] text-white shadow-md hover:shadow-[#4285F4]/50 hover:shadow-lg transition-all duration-200 ease-out will-change-transform inline-flex items-center relative ${className}`}
         >
             <div className="bg-white rounded-full p-2 sm:p-2.5 flex items-center justify-center">
-                {isLoading || isClearing ? (
+                {isLoading ? (
                     <Loader2Icon className="h-6 w-6 sm:h-7 sm:w-7 animate-spin text-gray-600" />
                 ) : (
                     <svg className="h-6 w-6 sm:h-7 sm:w-7" viewBox="0 0 48 48">

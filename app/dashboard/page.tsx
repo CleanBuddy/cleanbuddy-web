@@ -7,22 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Sparkles, Calendar, CreditCard, Star, Users, BarChart3, CheckCircle, Clock } from "lucide-react";
+import { Sparkles, Calendar, CreditCard, Star, Users, CheckCircle, Clock } from "lucide-react";
 import { DASHBOARD_STATS_CLIENT, DASHBOARD_STATS_CLEANER, DASHBOARD_STATS_ADMIN } from "@/lib/graphql/queries/dashboard-queries";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { UpcomingItemCard } from "@/components/dashboard/upcoming-item-card";
-import { ApplicationStatus } from "@/components/application-status";
-import { MY_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
+import { UserRole } from "@/lib/api/_gen/gql";
+import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
 
 export default function DashboardPage() {
   const { user, loading } = useCurrentUser();
 
-  // Query user's applications to check for pending cleaner application (fallback check)
-  const { data: applicationsData, loading: applicationsLoading } = useQuery(MY_APPLICATIONS, {
-    skip: !user,
-  });
-
-  if (loading || applicationsLoading) {
+  if (loading) {
     return (
       <div className="space-y-6 py-6">
         <Skeleton className="h-8 w-64" />
@@ -33,16 +28,6 @@ export default function DashboardPage() {
         </div>
       </div>
     );
-  }
-
-  // Check if user has a pending cleaner application by querying applications (fallback check)
-  const applications = applicationsData?.myApplications || [];
-  const pendingCleanerApplication = applications.find(
-    (app: { applicationType: string; status: string }) => app.applicationType === "cleaner" && app.status === "pending"
-  );
-
-  if (pendingCleanerApplication) {
-    return <ApplicationStatus application={pendingCleanerApplication} />;
   }
 
   // Customer Dashboard
@@ -193,6 +178,129 @@ export default function DashboardPage() {
             </Card>
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // Pending Cleaner Dashboard - Application Under Review
+  if (user?.role === UserRole.PendingCleaner) {
+    return (
+      <div className="space-y-6 py-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Application Under Review
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Your cleaner application is being reviewed by our team
+          </p>
+        </div>
+
+        <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-blue-500/10">
+                <Clock className="h-8 w-8 text-blue-500" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Application Pending</CardTitle>
+                <CardDescription>
+                  We're reviewing your application and documents
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Our team typically reviews applications within 24-48 hours.
+              You'll receive an email notification once your application
+              has been approved or if we need additional information.
+            </p>
+            <div className="flex gap-3">
+              <Button asChild variant="outline">
+                <Link href="/dashboard/profile">
+                  <Users className="mr-2 h-4 w-4" />
+                  Prepare Your Profile
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="mailto:support@cleanbuddy.com">
+                  Contact Support
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Show what's next */}
+        <Card>
+          <CardHeader>
+            <CardTitle>What Happens Next?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-3 text-sm">
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">1</Badge>
+                <span>Our team reviews your company documents and information</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">2</Badge>
+                <span>We verify your business registration and credentials</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">3</Badge>
+                <span>You'll receive approval and gain access to the cleaner dashboard</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">4</Badge>
+                <span>Start accepting cleaning jobs and earning money!</span>
+              </li>
+            </ol>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Rejected Cleaner - Allow Reapplication
+  if (user?.role === UserRole.RejectedCleaner) {
+    const { initiateCleanerFlow } = useAuthFlow();
+
+    return (
+      <div className="space-y-6 py-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Application Update
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Your cleaner application was not approved
+          </p>
+        </div>
+
+        <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+          <CardHeader>
+            <CardTitle>Application Not Approved</CardTitle>
+            <CardDescription>
+              We were unable to approve your cleaner application at this time
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              If you believe this was a mistake or would like to reapply with
+              updated information, please contact our support team or submit
+              a new application.
+            </p>
+            <div className="flex gap-3">
+              <Button onClick={() => initiateCleanerFlow()}>
+                Reapply as Cleaner
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="mailto:support@cleanbuddy.com">
+                  Contact Support
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
