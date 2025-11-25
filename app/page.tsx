@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle, Zap, Users, Shield, Clock, FileText } from "lucide-react";
+import { ArrowRight, CheckCircle, Zap, Users, Shield, Clock, FileText, Building2 } from "lucide-react";
 import { useCurrentUserQuery, UserRole } from "@/lib/api/_gen/gql";
 import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
 import { useRouter } from "next/navigation";
@@ -19,10 +19,15 @@ export default function Home() {
   const userRole = user?.role;
   const isClient = userRole === UserRole.Client || !userRole;
   const isPendingApplication = userRole === UserRole.PendingApplication;
+  const isPendingCompanyApplication = userRole === UserRole.PendingCompanyApplication;
   const isPendingCleaner = userRole === UserRole.PendingCleaner;
   const isRejectedCleaner = userRole === UserRole.RejectedCleaner;
   const isCleaner = userRole === UserRole.Cleaner;
-  const isAdmin = userRole === UserRole.GlobalAdmin || userRole === UserRole.CompanyAdmin;
+  const isPendingCompanyAdmin = userRole === UserRole.PendingCompanyAdmin;
+  const isRejectedCompanyAdmin = userRole === UserRole.RejectedCompanyAdmin;
+  const isCompanyAdmin = userRole === UserRole.CompanyAdmin;
+  const isGlobalAdmin = userRole === UserRole.GlobalAdmin;
+  const isAdmin = isGlobalAdmin || isCompanyAdmin;
 
   const handleBecomeCleanerClick = async () => {
     if (isAuthenticated && isClient) {
@@ -57,6 +62,16 @@ export default function Home() {
             {(!isAuthenticated || isClient) && (
               <Button onClick={handleBecomeCleanerClick} variant="outline" size="sm" className="md:size-default">
                 Become a Cleaner
+              </Button>
+            )}
+
+            {/* Show "Register Company" only for non-authenticated users or clients */}
+            {(!isAuthenticated || isClient) && (
+              <Button asChild variant="outline" size="sm" className="md:size-default hidden sm:inline-flex">
+                <Link href={isAuthenticated ? "/company-signup" : "/auth?intent=company"}>
+                  <Building2 className="h-4 w-4 mr-1" />
+                  Register Company
+                </Link>
               </Button>
             )}
 
@@ -137,6 +152,48 @@ export default function Home() {
             </>
           )}
 
+          {/* Hero content for users who need to complete company application */}
+          {isPendingCompanyApplication && (
+            <>
+              <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-full mb-6">
+                <Building2 className="h-5 w-5" />
+                <span className="font-medium">Complete Your Company Registration</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                Welcome to CleanBuddy!
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                You're almost there! Please complete your company registration to get started.
+              </p>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href="/company-signup">
+                  Complete Registration <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
+
+          {/* Hero content for pending company admin applicants */}
+          {isPendingCompanyAdmin && (
+            <>
+              <div className="inline-flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-4 py-2 rounded-full mb-6">
+                <Clock className="h-5 w-5" />
+                <span className="font-medium">Company Application Under Review</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                Welcome to CleanBuddy!
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                Your company registration is being reviewed by our team. We'll notify you once a decision has been made.
+              </p>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href="/dashboard">
+                  View Application Status <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
+
           {/* Hero content for pending cleaner applicants */}
           {isPendingCleaner && (
             <>
@@ -186,6 +243,34 @@ export default function Home() {
             </>
           )}
 
+          {/* Hero content for rejected company admin applicants */}
+          {isRejectedCompanyAdmin && (
+            <>
+              <div className="inline-flex items-center gap-2 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-2 rounded-full mb-6">
+                <Building2 className="h-5 w-5" />
+                <span className="font-medium">Company Registration Not Approved</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                We Need to Talk
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                Unfortunately, your company registration was not approved. Please contact us to discuss the reason and next steps.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
+                <Button asChild size="lg" className="w-full sm:w-auto">
+                  <Link href="/contact">
+                    Contact Us <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Link href="/dashboard">
+                    View Application Details
+                  </Link>
+                </Button>
+              </div>
+            </>
+          )}
+
           {/* Hero content for cleaners */}
           {isCleaner && (
             <>
@@ -203,8 +288,25 @@ export default function Home() {
             </>
           )}
 
-          {/* Hero content for admins */}
-          {isAdmin && (
+          {/* Hero content for company admins */}
+          {isCompanyAdmin && (
+            <>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
+                Welcome Back, {user?.displayName?.split(" ")[0]}!
+              </h1>
+              <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-4">
+                Manage your company, cleaners, and bookings with CleanBuddy.
+              </p>
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href="/dashboard">
+                  Company Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
+
+          {/* Hero content for global admins */}
+          {isGlobalAdmin && (
             <>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
                 Welcome, {user?.displayName?.split(" ")[0]}!
@@ -324,6 +426,12 @@ export default function Home() {
               <button onClick={handleBecomeCleanerClick} className="text-sm md:text-base hover:text-foreground">
                 Become a Cleaner
               </button>
+            )}
+            {/* Show "Register Company" only for non-authenticated users or clients */}
+            {(!isAuthenticated || isClient) && (
+              <Link href={isAuthenticated ? "/company-signup" : "/auth?intent=company"} className="text-sm md:text-base hover:text-foreground">
+                Register Company
+              </Link>
             )}
           </div>
           <p className="text-xs md:text-sm">&copy; 2025 CleanBuddy. All rights reserved.</p>

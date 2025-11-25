@@ -55,15 +55,39 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  // Check if user has a pending cleaner application by querying applications
+  // Check if user has a pending or rejected application by querying applications
   const applications = applicationsData?.myApplications || [];
   const pendingCleanerApplication = applications.find(
     (app: { applicationType: string; status: string }) => app.applicationType === ApplicationType.Cleaner && app.status === ApplicationStatusEnum.Pending
+  );
+  const pendingCompanyAdminApplication = applications.find(
+    (app: { applicationType: string; status: string }) => app.applicationType === ApplicationType.CompanyAdmin && app.status === ApplicationStatusEnum.Pending
+  );
+  const rejectedCleanerApplication = applications.find(
+    (app: { applicationType: string; status: string }) => app.applicationType === ApplicationType.Cleaner && app.status === ApplicationStatusEnum.Rejected
+  );
+  const rejectedCompanyAdminApplication = applications.find(
+    (app: { applicationType: string; status: string }) => app.applicationType === ApplicationType.CompanyAdmin && app.status === ApplicationStatusEnum.Rejected
   );
 
   // If user has pending cleaner application, show application status instead of dashboard
   if (pendingCleanerApplication) {
     return <ApplicationStatus application={pendingCleanerApplication} />;
+  }
+
+  // If user has pending company admin application, show application status instead of dashboard
+  if (pendingCompanyAdminApplication) {
+    return <ApplicationStatus application={pendingCompanyAdminApplication} />;
+  }
+
+  // If user has rejected cleaner application, show application status instead of dashboard
+  if (rejectedCleanerApplication) {
+    return <ApplicationStatus application={rejectedCleanerApplication} />;
+  }
+
+  // If user has rejected company admin application, show application status instead of dashboard
+  if (rejectedCompanyAdminApplication) {
+    return <ApplicationStatus application={rejectedCompanyAdminApplication} />;
   }
 
   // Generate breadcrumbs from pathname

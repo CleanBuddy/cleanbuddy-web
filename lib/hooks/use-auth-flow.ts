@@ -13,14 +13,32 @@ export function useAuthFlow() {
     userRole: UserRole,
     intent: string | null
   ): string {
-    // Priority 1: Users who need to complete application form
+    // Priority 1: Users who need to complete cleaner application form
     if (userRole === UserRole.PendingApplication) {
       return "/cleaner-signup";
     }
 
-    // Priority 2: Users with pending or active cleaner status
+    // Priority 2: Users who need to complete company application form
+    if (userRole === UserRole.PendingCompanyApplication) {
+      return "/company-signup";
+    }
+
+    // Priority 3: Handle company intent for CLIENT users
+    if (intent === "company" && userRole === UserRole.Client) {
+      return "/company-signup";
+    }
+
+    // Priority 4: Handle cleaner intent for CLIENT users
+    if (intent === "cleaner" && userRole === UserRole.Client) {
+      return "/cleaner-signup";
+    }
+
+    // Priority 5: Users with pending, rejected, or active cleaner/company status
     if (
       userRole === UserRole.PendingCleaner ||
+      userRole === UserRole.PendingCompanyAdmin ||
+      userRole === UserRole.RejectedCleaner ||
+      userRole === UserRole.RejectedCompanyAdmin ||
       userRole === UserRole.Cleaner ||
       userRole === UserRole.GlobalAdmin ||
       userRole === UserRole.CompanyAdmin
@@ -28,13 +46,12 @@ export function useAuthFlow() {
       return "/dashboard";
     }
 
-    // Priority 3: CLIENT users go to dashboard
+    // Priority 6: CLIENT users go to dashboard
     return "/dashboard";
   }
 
   /**
    * Initiates the cleaner application flow for existing users
-   * This replaces the token clearing hack
    */
   async function initiateCleanerFlow(): Promise<void> {
     try {
@@ -56,8 +73,32 @@ export function useAuthFlow() {
     }
   }
 
+  /**
+   * Initiates the company admin application flow for existing users
+   */
+  async function initiateCompanyFlow(): Promise<void> {
+    try {
+      // Update role to PENDING_COMPANY_APPLICATION via mutation
+      await updateUserRole({
+        variables: { role: UserRole.PendingCompanyApplication }
+      });
+
+      // Refetch user data to get updated role
+      await apolloClient.refetchQueries({
+        include: ["CurrentUser"]
+      });
+
+      // Redirect to company application form
+      router.push("/company-signup");
+    } catch (error) {
+      console.error("Error initiating company flow:", error);
+      throw error;
+    }
+  }
+
   return {
     getPostAuthRedirect,
-    initiateCleanerFlow
+    initiateCleanerFlow,
+    initiateCompanyFlow
   };
 }

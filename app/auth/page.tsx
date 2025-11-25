@@ -14,39 +14,65 @@ function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const intent = searchParams.get("intent");
-  const { getPostAuthRedirect, initiateCleanerFlow } = useAuthFlow();
+  const { getPostAuthRedirect, initiateCleanerFlow, initiateCompanyFlow } = useAuthFlow();
 
   // Store intent in localStorage before authentication
   useEffect(() => {
     if (intent === "cleaner") {
       localStorage.setItem("authIntent", "cleaner");
+    } else if (intent === "company") {
+      localStorage.setItem("authIntent", "company");
     }
   }, [intent]);
 
   // Redirect authenticated users
   useEffect(() => {
-    if (data?.currentUser && !loading) {
-      const storedIntent = localStorage.getItem("authIntent");
+    async function handleAuthRedirect() {
+      if (data?.currentUser && !loading) {
+        const storedIntent = localStorage.getItem("authIntent");
 
-      // If CLIENT wants to become cleaner, initiate upgrade flow
-      if (
-        storedIntent === "cleaner" &&
-        data.currentUser.role === UserRole.Client
-      ) {
+        // If CLIENT wants to become cleaner, initiate upgrade flow
+        if (
+          storedIntent === "cleaner" &&
+          data.currentUser.role === UserRole.Client
+        ) {
+          localStorage.removeItem("authIntent");
+          try {
+            await initiateCleanerFlow();
+          } catch (error) {
+            console.error("Failed to initiate cleaner flow:", error);
+            router.push("/cleaner-signup");
+          }
+          return;
+        }
+
+        // If CLIENT wants to register company, initiate company flow
+        if (
+          storedIntent === "company" &&
+          data.currentUser.role === UserRole.Client
+        ) {
+          localStorage.removeItem("authIntent");
+          try {
+            await initiateCompanyFlow();
+          } catch (error) {
+            console.error("Failed to initiate company flow:", error);
+            router.push("/company-signup");
+          }
+          return;
+        }
+
+        // For all other cases, use centralized redirect logic
+        const destination = getPostAuthRedirect(
+          data.currentUser.role,
+          storedIntent
+        );
         localStorage.removeItem("authIntent");
-        initiateCleanerFlow();
-        return;
+        router.push(destination);
       }
-
-      // For all other cases, use centralized redirect logic
-      const destination = getPostAuthRedirect(
-        data.currentUser.role,
-        storedIntent
-      );
-      localStorage.removeItem("authIntent");
-      router.push(destination);
     }
-  }, [data?.currentUser, loading, router, initiateCleanerFlow, getPostAuthRedirect]);
+
+    handleAuthRedirect();
+  }, [data?.currentUser, loading, router, initiateCleanerFlow, initiateCompanyFlow, getPostAuthRedirect]);
 
   // Show loading skeleton while checking authentication
   if (loading) {
@@ -87,11 +113,13 @@ function AuthPageContent() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {intent === "cleaner" ? "Apply as a Cleaner" : "Welcome Back"}
+              {intent === "cleaner" ? "Apply as a Cleaner" : intent === "company" ? "Register Your Company" : "Welcome Back"}
             </CardTitle>
             <CardDescription>
               {intent === "cleaner"
                 ? "Sign in to continue with your cleaner application"
+                : intent === "company"
+                ? "Sign in to register your cleaning company"
                 : "Sign in to your account to continue"}
             </CardDescription>
           </CardHeader>

@@ -305,6 +305,123 @@ export default function DashboardPage() {
     );
   }
 
+  // Pending Company Admin Dashboard - Application Under Review
+  if (user?.role === UserRole.PendingCompanyAdmin) {
+    return (
+      <div className="space-y-6 py-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Company Registration Under Review
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Your company registration is being reviewed by our team
+          </p>
+        </div>
+
+        <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-blue-500/10">
+                <Clock className="h-8 w-8 text-blue-500" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Registration Pending</CardTitle>
+                <CardDescription>
+                  We're reviewing your company registration and documents
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Our team typically reviews company registrations within 24-48 hours.
+              You'll receive an email notification once your registration
+              has been approved or if we need additional information.
+            </p>
+            <div className="flex gap-3">
+              <Button asChild variant="outline">
+                <Link href="mailto:support@cleanbuddy.com">
+                  Contact Support
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Show what's next */}
+        <Card>
+          <CardHeader>
+            <CardTitle>What Happens Next?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-3 text-sm">
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">1</Badge>
+                <span>Our team reviews your company documents and information</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">2</Badge>
+                <span>We verify your business registration and credentials</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">3</Badge>
+                <span>You'll receive approval and gain access to the company admin dashboard</span>
+              </li>
+              <li className="flex gap-3">
+                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">4</Badge>
+                <span>Start managing your cleaning team and accepting jobs!</span>
+              </li>
+            </ol>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Rejected Company Admin - Show rejection status
+  if (user?.role === UserRole.RejectedCompanyAdmin) {
+    const { initiateCompanyFlow } = useAuthFlow();
+
+    return (
+      <div className="space-y-6 py-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Registration Update
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Your company registration was not approved
+          </p>
+        </div>
+
+        <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+          <CardHeader>
+            <CardTitle>Registration Not Approved</CardTitle>
+            <CardDescription>
+              We were unable to approve your company registration at this time
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              If you believe this was a mistake or would like to reapply with
+              updated information, please contact our support team or submit
+              a new registration.
+            </p>
+            <div className="flex gap-3">
+              <Button onClick={() => initiateCompanyFlow()}>
+                Reapply as Company
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="mailto:support@cleanbuddy.com">
+                  Contact Support
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Cleaner Dashboard
   if (user?.role === UserRole.Cleaner) {
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_CLEANER, {

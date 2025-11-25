@@ -1,0 +1,84 @@
+query MyCompany {
+  myCompany {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    isActive
+    totalCleaners
+    activeCleaners
+    createdAt
+    updatedAt
+  }
+}
+
+query Company($id: ID!) {
+  company(id: $id) {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    isActive
+    totalCleaners
+    activeCleaners
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query Companies {
+  companies {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyCity
+    businessType
+    isActive
+    totalCleaners
+    activeCleaners
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+
+mutation UpdateCompany($input: UpdateCompanyInput!) {
+  updateCompany(input: $input) {
+    id
+    companyName
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    businessType
+    isActive
+    updatedAt
+  }
+}

@@ -305,6 +305,27 @@ export enum CleanerTier {
   Standard = 'STANDARD'
 }
 
+export type Company = {
+  __typename?: 'Company';
+  activeCleaners: Scalars['Int']['output'];
+  adminUser: User;
+  businessType?: Maybe<Scalars['String']['output']>;
+  companyCity: Scalars['String']['output'];
+  companyCountry: Scalars['String']['output'];
+  companyCounty?: Maybe<Scalars['String']['output']>;
+  companyName: Scalars['String']['output'];
+  companyPostalCode: Scalars['String']['output'];
+  companyStreet: Scalars['String']['output'];
+  createdAt: Scalars['Time']['output'];
+  documents?: Maybe<ApplicationDocuments>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  registrationNumber: Scalars['String']['output'];
+  taxId: Scalars['String']['output'];
+  totalCleaners: Scalars['Int']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
 export type CompanyInfo = {
   __typename?: 'CompanyInfo';
   businessType?: Maybe<Scalars['String']['output']>;
@@ -494,6 +515,7 @@ export type Mutation = {
   updateBooking: Booking;
   updateCleanerProfile: CleanerProfile;
   updateCleanerTier: CleanerProfile;
+  updateCompany: Company;
   updateCurrentUser: User;
   updateReview: Review;
   updateServiceArea: ServiceArea;
@@ -688,6 +710,11 @@ export type MutationUpdateCleanerTierArgs = {
 };
 
 
+export type MutationUpdateCompanyArgs = {
+  input: UpdateCompanyInput;
+};
+
+
 export type MutationUpdateCurrentUserArgs = {
   input: UpdateCurrentUserInput;
 };
@@ -752,6 +779,8 @@ export type Query = {
   cleanerProfileByUserId?: Maybe<CleanerProfile>;
   cleanersByPostalCode: Array<CleanerProfile>;
   cleanersInArea: Array<CleanerProfile>;
+  companies: Array<Company>;
+  company?: Maybe<Company>;
   currentUser?: Maybe<User>;
   generateDocumentSignedUrl: Scalars['String']['output'];
   isCleanerAvailable: Scalars['Boolean']['output'];
@@ -760,6 +789,7 @@ export type Query = {
   myAvailability: Array<Availability>;
   myBookings: BookingConnection;
   myCleanerProfile?: Maybe<CleanerProfile>;
+  myCompany?: Maybe<Company>;
   myDefaultAddress?: Maybe<Address>;
   myEarnings: CleanerEarnings;
   myJobs: BookingConnection;
@@ -875,6 +905,11 @@ export type QueryCleanersByPostalCodeArgs = {
 export type QueryCleanersInAreaArgs = {
   city: Scalars['String']['input'];
   neighborhood: Scalars['String']['input'];
+};
+
+
+export type QueryCompanyArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -1291,6 +1326,16 @@ export type UpdateCleanerProfileInput = {
   profilePicture?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateCompanyInput = {
+  businessType?: InputMaybe<Scalars['String']['input']>;
+  companyCity?: InputMaybe<Scalars['String']['input']>;
+  companyCounty?: InputMaybe<Scalars['String']['input']>;
+  companyName?: InputMaybe<Scalars['String']['input']>;
+  companyPostalCode?: InputMaybe<Scalars['String']['input']>;
+  companyStreet?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 export type UpdateCurrentUserInput = {
   displayName?: InputMaybe<Scalars['String']['input']>;
 };
@@ -1353,7 +1398,10 @@ export enum UserRole {
   GlobalAdmin = 'GLOBAL_ADMIN',
   PendingApplication = 'PENDING_APPLICATION',
   PendingCleaner = 'PENDING_CLEANER',
-  RejectedCleaner = 'REJECTED_CLEANER'
+  PendingCompanyAdmin = 'PENDING_COMPANY_ADMIN',
+  PendingCompanyApplication = 'PENDING_COMPANY_APPLICATION',
+  RejectedCleaner = 'REJECTED_CLEANER',
+  RejectedCompanyAdmin = 'REJECTED_COMPANY_ADMIN'
 }
 
 export type SubmitApplicationMutationVariables = Exact<{
@@ -1415,6 +1463,30 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, pendingCleanerApplication?: { __typename?: 'Application', id: string, status: ApplicationStatus, applicationType: ApplicationType, createdAt: string, rejectionReason?: string | null } | null } | null };
+
+export type MyCompanyQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCompanyQuery = { __typename?: 'Query', myCompany?: { __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null } | null };
+
+export type CompanyQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type CompanyQuery = { __typename?: 'Query', company?: { __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } } | null };
+
+export type CompaniesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CompaniesQuery = { __typename?: 'Query', companies: Array<{ __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyCity: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+
+export type UpdateCompanyMutationVariables = Exact<{
+  input: UpdateCompanyInput;
+}>;
+
+
+export type UpdateCompanyMutation = { __typename?: 'Mutation', updateCompany: { __typename?: 'Company', id: string, companyName: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, businessType?: string | null, isActive: boolean, updatedAt: string } };
 
 export type UpdateUserRoleMutationVariables = Exact<{
   role: UserRole;
@@ -1839,6 +1911,218 @@ export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
 export type CurrentUserSuspenseQueryHookResult = ReturnType<typeof useCurrentUserSuspenseQuery>;
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
+export const MyCompanyDocument = gql`
+    query MyCompany {
+  myCompany {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    isActive
+    totalCleaners
+    activeCleaners
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useMyCompanyQuery__
+ *
+ * To run a query within a React component, call `useMyCompanyQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyCompanyQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyCompanyQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyCompanyQuery(baseOptions?: Apollo.QueryHookOptions<MyCompanyQuery, MyCompanyQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyCompanyQuery, MyCompanyQueryVariables>(MyCompanyDocument, options);
+      }
+export function useMyCompanyLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyCompanyQuery, MyCompanyQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyCompanyQuery, MyCompanyQueryVariables>(MyCompanyDocument, options);
+        }
+export function useMyCompanySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCompanyQuery, MyCompanyQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyCompanyQuery, MyCompanyQueryVariables>(MyCompanyDocument, options);
+        }
+export type MyCompanyQueryHookResult = ReturnType<typeof useMyCompanyQuery>;
+export type MyCompanyLazyQueryHookResult = ReturnType<typeof useMyCompanyLazyQuery>;
+export type MyCompanySuspenseQueryHookResult = ReturnType<typeof useMyCompanySuspenseQuery>;
+export type MyCompanyQueryResult = Apollo.QueryResult<MyCompanyQuery, MyCompanyQueryVariables>;
+export const CompanyDocument = gql`
+    query Company($id: ID!) {
+  company(id: $id) {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    isActive
+    totalCleaners
+    activeCleaners
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useCompanyQuery__
+ *
+ * To run a query within a React component, call `useCompanyQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCompanyQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCompanyQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useCompanyQuery(baseOptions: Apollo.QueryHookOptions<CompanyQuery, CompanyQueryVariables> & ({ variables: CompanyQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CompanyQuery, CompanyQueryVariables>(CompanyDocument, options);
+      }
+export function useCompanyLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CompanyQuery, CompanyQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CompanyQuery, CompanyQueryVariables>(CompanyDocument, options);
+        }
+export function useCompanySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CompanyQuery, CompanyQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CompanyQuery, CompanyQueryVariables>(CompanyDocument, options);
+        }
+export type CompanyQueryHookResult = ReturnType<typeof useCompanyQuery>;
+export type CompanyLazyQueryHookResult = ReturnType<typeof useCompanyLazyQuery>;
+export type CompanySuspenseQueryHookResult = ReturnType<typeof useCompanySuspenseQuery>;
+export type CompanyQueryResult = Apollo.QueryResult<CompanyQuery, CompanyQueryVariables>;
+export const CompaniesDocument = gql`
+    query Companies {
+  companies {
+    id
+    companyName
+    registrationNumber
+    taxId
+    companyCity
+    businessType
+    isActive
+    totalCleaners
+    activeCleaners
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useCompaniesQuery__
+ *
+ * To run a query within a React component, call `useCompaniesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCompaniesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCompaniesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCompaniesQuery(baseOptions?: Apollo.QueryHookOptions<CompaniesQuery, CompaniesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CompaniesQuery, CompaniesQueryVariables>(CompaniesDocument, options);
+      }
+export function useCompaniesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CompaniesQuery, CompaniesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CompaniesQuery, CompaniesQueryVariables>(CompaniesDocument, options);
+        }
+export function useCompaniesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CompaniesQuery, CompaniesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CompaniesQuery, CompaniesQueryVariables>(CompaniesDocument, options);
+        }
+export type CompaniesQueryHookResult = ReturnType<typeof useCompaniesQuery>;
+export type CompaniesLazyQueryHookResult = ReturnType<typeof useCompaniesLazyQuery>;
+export type CompaniesSuspenseQueryHookResult = ReturnType<typeof useCompaniesSuspenseQuery>;
+export type CompaniesQueryResult = Apollo.QueryResult<CompaniesQuery, CompaniesQueryVariables>;
+export const UpdateCompanyDocument = gql`
+    mutation UpdateCompany($input: UpdateCompanyInput!) {
+  updateCompany(input: $input) {
+    id
+    companyName
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    businessType
+    isActive
+    updatedAt
+  }
+}
+    `;
+export type UpdateCompanyMutationFn = Apollo.MutationFunction<UpdateCompanyMutation, UpdateCompanyMutationVariables>;
+
+/**
+ * __useUpdateCompanyMutation__
+ *
+ * To run a mutation, you first call `useUpdateCompanyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateCompanyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateCompanyMutation, { data, loading, error }] = useUpdateCompanyMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateCompanyMutation(baseOptions?: Apollo.MutationHookOptions<UpdateCompanyMutation, UpdateCompanyMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateCompanyMutation, UpdateCompanyMutationVariables>(UpdateCompanyDocument, options);
+      }
+export type UpdateCompanyMutationHookResult = ReturnType<typeof useUpdateCompanyMutation>;
+export type UpdateCompanyMutationResult = Apollo.MutationResult<UpdateCompanyMutation>;
+export type UpdateCompanyMutationOptions = Apollo.BaseMutationOptions<UpdateCompanyMutation, UpdateCompanyMutationVariables>;
 export const UpdateUserRoleDocument = gql`
     mutation UpdateUserRole($role: UserRole!) {
   updateUserRole(role: $role) {

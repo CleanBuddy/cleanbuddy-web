@@ -19,12 +19,13 @@ import { useDialog } from "@/components/providers/dialog-provider";
 import { UserSettingsDialogContent } from "@/components/dialogs/user-settings-dialog";
 import { signOut } from "@/lib/auth";
 import Link from "next/link";
-import { ApplicationStatus as ApplicationStatusEnum } from "@/lib/api/_gen/gql";
+import { ApplicationStatus as ApplicationStatusEnum, ApplicationType } from "@/lib/api/_gen/gql";
 
 interface ApplicationStatusProps {
   application: {
     id: string;
     status: string;
+    applicationType: string;
     createdAt: string;
     rejectionReason?: string | null;
   };
@@ -33,6 +34,8 @@ interface ApplicationStatusProps {
 export function ApplicationStatus({ application }: ApplicationStatusProps) {
   const isPending = application.status === ApplicationStatusEnum.Pending;
   const isRejected = application.status === ApplicationStatusEnum.Rejected;
+  const isCompanyApplication = application.applicationType === ApplicationType.CompanyAdmin;
+  const applicationType = isCompanyApplication ? "Company" : "Cleaner";
   const { user } = useCurrentUser();
   const { openDialog } = useDialog();
 
@@ -102,7 +105,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
                 {isRejected && "Application Not Approved"}
               </CardTitle>
               <CardDescription>
-                Cleaner Application Status
+                {applicationType} Application Status
               </CardDescription>
             </div>
           </div>
@@ -113,7 +116,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Your application to become a cleaner is currently being reviewed by our team.
+                  Your {isCompanyApplication ? "company registration" : "application to become a cleaner"} is currently being reviewed by our team.
                   This process typically takes 1-3 business days. You'll receive an email once a decision has been made.
                 </AlertDescription>
               </Alert>
@@ -137,9 +140,9 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
                 <h4 className="font-medium mb-2">What happens next?</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• Our team will review your submitted documents</li>
-                  <li>• We'll verify your business registration and insurance</li>
+                  <li>• We'll verify your {isCompanyApplication ? "company registration and credentials" : "business registration and insurance"}</li>
                   <li>• You'll receive an email notification with the decision</li>
-                  <li>• Once approved, you can access the cleaner dashboard</li>
+                  <li>• Once approved, you can access the {isCompanyApplication ? "company admin" : "cleaner"} dashboard</li>
                 </ul>
               </div>
             </>
@@ -150,7 +153,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Unfortunately, your application to become a cleaner was not approved at this time.
+                  Unfortunately, your {isCompanyApplication ? "company registration" : "application to become a cleaner"} was not approved at this time.
                 </AlertDescription>
               </Alert>
 
@@ -176,7 +179,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
 
               <div className="flex gap-3">
                 <Button asChild className="flex-1">
-                  <Link href="/cleaner-signup">Apply Again</Link>
+                  <Link href={isCompanyApplication ? "/company-signup" : "/cleaner-signup"}>Apply Again</Link>
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
                   <Link href="/">Back to Home</Link>

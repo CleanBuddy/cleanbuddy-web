@@ -15,6 +15,7 @@ import {
   BarChart3,
   ClipboardList,
   FileText,
+  Building2,
 } from "lucide-react";
 
 import { NavUser } from "@/components/sidebar/nav-user";
@@ -78,8 +79,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ];
     }
 
-    // Admin navigation
-    if (role === UserRole.GlobalAdmin || role === UserRole.CompanyAdmin) {
+    // Company Admin navigation
+    if (role === UserRole.CompanyAdmin) {
+      return [
+        { title: "Dashboard", url: "/dashboard", icon: Home },
+        { title: "My Company", url: "/dashboard/company", icon: Building2 },
+        { title: "My Cleaners", url: "/dashboard/cleaners", icon: Users },
+        { title: "Company Bookings", url: "/dashboard/bookings", icon: ClipboardList },
+        { title: "Settings", url: "/dashboard/settings", icon: Settings },
+      ];
+    }
+
+    // Global Admin navigation
+    if (role === UserRole.GlobalAdmin) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "Applications", url: "/dashboard/applications", icon: FileText, badge: pendingApplicationsCount },
@@ -114,7 +126,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate text-xs text-muted-foreground">
                     {user?.role === UserRole.Client && "Customer Portal"}
                     {user?.role === UserRole.Cleaner && "Cleaner Portal"}
-                    {(user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) && "Admin Portal"}
+                    {user?.role === UserRole.CompanyAdmin && "Company Portal"}
+                    {user?.role === UserRole.GlobalAdmin && "Admin Portal"}
                   </span>
                 </div>
               </Link>
