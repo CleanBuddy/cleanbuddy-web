@@ -6,7 +6,6 @@ query MyCleanerProfile {
     bio
     profilePicture
     tier
-    hourlyRate
     isActive
     isVerified
     isAvailableToday
@@ -30,14 +29,6 @@ query MyCleanerProfile {
   }
 }
 
-query TierRateRanges {
-  tierRateRanges {
-    tier
-    minRate
-    maxRate
-  }
-}
-
 mutation CreateCleanerProfile($input: CreateCleanerProfileInput!) {
   createCleanerProfile(input: $input) {
     id
@@ -45,7 +36,6 @@ mutation CreateCleanerProfile($input: CreateCleanerProfileInput!) {
     companyId
     bio
     tier
-    hourlyRate
     isActive
     createdAt
     company {
@@ -66,7 +56,6 @@ mutation UpdateCleanerProfile($input: UpdateCleanerProfileInput!) {
     id
     bio
     profilePicture
-    hourlyRate
     isActive
     isAvailableToday
   }

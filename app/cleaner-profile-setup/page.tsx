@@ -15,7 +15,6 @@ import {
   UserRole,
   useCreateCleanerProfileMutation,
   useMyCleanerProfileQuery,
-  useTierRateRangesQuery,
 } from "@/lib/api/_gen/gql";
 import Link from "next/link";
 
@@ -32,7 +31,6 @@ export default function CleanerProfileSetupPage() {
   const hasRedirected = useRef(false);
 
   const [bio, setBio] = useState("");
-  const [hourlyRate, setHourlyRate] = useState<number>(5000); // Default 50 RON in bani
   const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([{ city: "" }]);
 
   // Check if user already has a profile - use errorPolicy to handle 422 gracefully
@@ -40,9 +38,6 @@ export default function CleanerProfileSetupPage() {
     skip: !user || user.role !== UserRole.Cleaner,
     errorPolicy: "all",
   });
-
-  // Get rate ranges for validation hints
-  const { data: rateRangesData } = useTierRateRangesQuery();
 
   const [createProfile, { loading: createLoading }] = useCreateCleanerProfileMutation();
 
@@ -101,7 +96,6 @@ export default function CleanerProfileSetupPage() {
       await createProfile({
         variables: {
           input: {
-            hourlyRate,
             bio: bio || null,
             serviceAreaInputs: serviceAreas
               .filter(area => area.city.trim())
@@ -132,11 +126,6 @@ export default function CleanerProfileSetupPage() {
       });
     }
   };
-
-  // Get rate range for NEW tier
-  const newTierRange = rateRangesData?.tierRateRanges?.find(r => r.tier === "NEW");
-  const minRate = newTierRange?.minRate ?? 3000;
-  const maxRate = newTierRange?.maxRate ?? 10000;
 
   if (userLoading || profileLoading) {
     return (
@@ -195,25 +184,6 @@ export default function CleanerProfileSetupPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Hourly Rate */}
-            <div className="space-y-2">
-              <Label htmlFor="hourlyRate">Hourly Rate (RON)</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="hourlyRate"
-                  type="number"
-                  min={minRate / 100}
-                  max={maxRate / 100}
-                  value={hourlyRate / 100}
-                  onChange={(e) => setHourlyRate(Math.round(parseFloat(e.target.value) * 100) || minRate)}
-                  className="w-32"
-                />
-                <span className="text-sm text-muted-foreground">
-                  RON/hour ({minRate / 100} - {maxRate / 100} RON for new cleaners)
-                </span>
-              </div>
-            </div>
-
             {/* Bio */}
             <div className="space-y-2">
               <Label htmlFor="bio">Bio (optional)</Label>

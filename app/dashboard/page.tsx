@@ -12,8 +12,8 @@ import { DASHBOARD_STATS_CLIENT, DASHBOARD_STATS_ADMIN } from "@/lib/graphql/que
 import { StatCard } from "@/components/dashboard/stat-card";
 import { UpcomingItemCard } from "@/components/dashboard/upcoming-item-card";
 import { CleanerDashboard } from "@/components/dashboard/cleaner-dashboard";
-import { UserRole } from "@/lib/api/_gen/gql";
-import { useAuthFlow } from "@/lib/hooks/use-auth-flow";
+import { AccountButton } from "@/components/account-button";
+import { UserRole, CompanyStatus } from "@/lib/api/_gen/gql";
 
 export default function DashboardPage() {
   const { user, loading } = useCurrentUser();
@@ -183,140 +183,25 @@ export default function DashboardPage() {
     );
   }
 
-  // Pending Cleaner Dashboard - Application Under Review
-  if (user?.role === UserRole.PendingCleaner) {
+  // CleanerAdmin with pending company - Application Under Review
+  if (user?.role === UserRole.CleanerAdmin && user?.company?.status === CompanyStatus.Pending) {
     return (
       <div className="space-y-6 py-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Application Under Review
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Your cleaner application is being reviewed by our team
-          </p>
-        </div>
-
-        <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-blue-500/10">
-                <Clock className="h-8 w-8 text-blue-500" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Application Pending</CardTitle>
-                <CardDescription>
-                  We're reviewing your application and documents
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Our team typically reviews applications within 24-48 hours.
-              You'll receive an email notification once your application
-              has been approved or if we need additional information.
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Company Registration Under Review
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Your company registration is being reviewed by our team
             </p>
-            <div className="flex gap-3">
-              <Button asChild variant="outline">
-                <Link href="/dashboard/profile">
-                  <Users className="mr-2 h-4 w-4" />
-                  Prepare Your Profile
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="mailto:support@cleanbuddy.com">
-                  Contact Support
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Show what's next */}
-        <Card>
-          <CardHeader>
-            <CardTitle>What Happens Next?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-3 text-sm">
-              <li className="flex gap-3">
-                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">1</Badge>
-                <span>Our team reviews your company documents and information</span>
-              </li>
-              <li className="flex gap-3">
-                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">2</Badge>
-                <span>We verify your business registration and credentials</span>
-              </li>
-              <li className="flex gap-3">
-                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">3</Badge>
-                <span>You'll receive approval and gain access to the cleaner dashboard</span>
-              </li>
-              <li className="flex gap-3">
-                <Badge className="h-6 w-6 rounded-full p-0 flex items-center justify-center">4</Badge>
-                <span>Start accepting cleaning jobs and earning money!</span>
-              </li>
-            </ol>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Rejected Cleaner - Allow Reapplication
-  if (user?.role === UserRole.RejectedCleaner) {
-    const { initiateCleanerFlow } = useAuthFlow();
-
-    return (
-      <div className="space-y-6 py-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Application Update
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Your cleaner application was not approved
-          </p>
-        </div>
-
-        <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
-          <CardHeader>
-            <CardTitle>Application Not Approved</CardTitle>
-            <CardDescription>
-              We were unable to approve your cleaner application at this time
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              If you believe this was a mistake or would like to reapply with
-              updated information, please contact our support team or submit
-              a new application.
-            </p>
-            <div className="flex gap-3">
-              <Button onClick={() => initiateCleanerFlow()}>
-                Reapply as Cleaner
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="mailto:support@cleanbuddy.com">
-                  Contact Support
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Pending Company Admin Dashboard - Application Under Review
-  if (user?.role === UserRole.PendingCompanyAdmin) {
-    return (
-      <div className="space-y-6 py-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Company Registration Under Review
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Your company registration is being reviewed by our team
-          </p>
+          </div>
+          <AccountButton
+            user={{
+              name: user.displayName || "User",
+              email: user.email || "",
+            }}
+          />
         </div>
 
         <Card className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
@@ -379,19 +264,25 @@ export default function DashboardPage() {
     );
   }
 
-  // Rejected Company Admin - Show rejection status
-  if (user?.role === UserRole.RejectedCompanyAdmin) {
-    const { initiateCompanyFlow } = useAuthFlow();
-
+  // CleanerAdmin with rejected company - Show rejection status
+  if (user?.role === UserRole.CleanerAdmin && user?.company?.status === CompanyStatus.Rejected) {
     return (
       <div className="space-y-6 py-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Registration Update
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Your company registration was not approved
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Registration Update
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Your company registration was not approved
+            </p>
+          </div>
+          <AccountButton
+            user={{
+              name: user.displayName || "User",
+              email: user.email || "",
+            }}
+          />
         </div>
 
         <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
@@ -404,13 +295,15 @@ export default function DashboardPage() {
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
               If you believe this was a mistake or would like to reapply with
-              updated information, please contact our support team or submit
-              a new registration.
+              updated information, please contact our support team.
             </p>
+            {user?.company?.rejectionReason && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">Reason:</p>
+                <p className="text-sm text-muted-foreground">{user.company.rejectionReason}</p>
+              </div>
+            )}
             <div className="flex gap-3">
-              <Button onClick={() => initiateCompanyFlow()}>
-                Reapply as Company
-              </Button>
               <Button asChild variant="outline">
                 <Link href="mailto:support@cleanbuddy.com">
                   Contact Support
@@ -429,7 +322,7 @@ export default function DashboardPage() {
   }
 
   // Admin Dashboard
-  if (user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) {
+  if (user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CleanerAdmin) {
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_ADMIN, {
       skip: !user,
     });

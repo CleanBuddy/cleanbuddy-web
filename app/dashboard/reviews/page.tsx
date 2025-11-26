@@ -25,7 +25,7 @@ export default function ReviewsPage() {
         <p className="text-muted-foreground mt-2">
           {user?.role === UserRole.Client && "View and manage your service reviews"}
           {user?.role === UserRole.Cleaner && "View reviews from your clients"}
-          {(user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CompanyAdmin) && "Manage platform reviews"}
+          {(user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CleanerAdmin) && "Manage platform reviews"}
         </p>
       </div>
 

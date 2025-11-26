@@ -55,7 +55,7 @@ export function GoogleSignInButton({
 
                 if (userData?.currentUser) {
                     const destination = getPostAuthRedirect(
-                        userData.currentUser.role,
+                        userData.currentUser,
                         authIntent
                     );
                     // Don't clear authIntent for invite - the invite page needs it

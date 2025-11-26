@@ -1,18 +1,25 @@
-import { UserRole, useUpdateUserRoleMutation } from "@/lib/api/_gen/gql";
+import { UserRole, CompanyStatus, CurrentUserQuery } from "@/lib/api/_gen/gql";
 import { useRouter } from "next/navigation";
-import { apolloClient } from "@/lib/apollo-client";
+
+type CurrentUser = NonNullable<CurrentUserQuery["currentUser"]>;
 
 export function useAuthFlow() {
   const router = useRouter();
-  const [updateUserRole] = useUpdateUserRoleMutation();
 
   /**
-   * Determines where to redirect after authentication based on user role and intent
+   * Determines where to redirect after authentication based on user role and company status
+   *
+   * New simplified flow:
+   * - Roles are assigned at auth time based on intent (CLIENT, CLEANER_ADMIN, CLEANER, GLOBAL_ADMIN)
+   * - CLEANER_ADMIN users have a company with status (PENDING, APPROVED, REJECTED)
+   * - CLEANER users are created via invite link and auto-approved
    */
   function getPostAuthRedirect(
-    userRole: UserRole,
+    user: CurrentUser,
     intent: string | null
   ): string {
+    const { role, company } = user;
+
     // Priority 0: Handle invite intent - redirect back to invite page
     if (intent === "invite") {
       const inviteToken = localStorage.getItem("inviteToken");
@@ -21,92 +28,61 @@ export function useAuthFlow() {
       }
     }
 
-    // Priority 1: Users who need to complete cleaner application form
-    if (userRole === UserRole.PendingApplication) {
-      return "/cleaner-signup";
-    }
+    // Priority 1: CLEANER_ADMIN users
+    if (role === UserRole.CleanerAdmin) {
+      // No company yet - needs to fill out company application form
+      if (!company) {
+        return "/company-signup";
+      }
 
-    // Priority 2: Users who need to complete company application form
-    if (userRole === UserRole.PendingCompanyApplication) {
-      return "/company-signup";
-    }
+      // Company pending approval - go to dashboard (shows pending status)
+      if (company.status === CompanyStatus.Pending) {
+        return "/dashboard";
+      }
 
-    // Priority 3: Handle company intent for CLIENT users
-    if (intent === "company" && userRole === UserRole.Client) {
-      return "/company-signup";
-    }
+      // Company rejected - go to dashboard (shows rejection reason, can reapply)
+      if (company.status === CompanyStatus.Rejected) {
+        return "/dashboard";
+      }
 
-    // Priority 4: Handle cleaner intent for CLIENT users
-    if (intent === "cleaner" && userRole === UserRole.Client) {
-      return "/cleaner-signup";
-    }
-
-    // Priority 5: Users with pending, rejected, or active cleaner/company status
-    if (
-      userRole === UserRole.PendingCleaner ||
-      userRole === UserRole.PendingCompanyAdmin ||
-      userRole === UserRole.RejectedCleaner ||
-      userRole === UserRole.RejectedCompanyAdmin ||
-      userRole === UserRole.Cleaner ||
-      userRole === UserRole.GlobalAdmin ||
-      userRole === UserRole.CompanyAdmin
-    ) {
+      // Company approved - go to dashboard
       return "/dashboard";
     }
 
-    // Priority 6: CLIENT users go to dashboard
+    // Priority 2: CLEANER users always go to dashboard
+    if (role === UserRole.Cleaner) {
+      return "/dashboard";
+    }
+
+    // Priority 3: GLOBAL_ADMIN users go to dashboard
+    if (role === UserRole.GlobalAdmin) {
+      return "/dashboard";
+    }
+
+    // Priority 4: CLIENT users
+    // If they had a company or cleaner intent, that's handled at auth time now
+    // They just go to dashboard
     return "/dashboard";
   }
 
   /**
-   * Initiates the cleaner application flow for existing users
+   * Navigate to the company signup/application page
+   * This is for CLEANER_ADMIN users who haven't submitted their company info yet
    */
-  async function initiateCleanerFlow(): Promise<void> {
-    try {
-      // Update role to PENDING_APPLICATION via mutation
-      await updateUserRole({
-        variables: { role: UserRole.PendingApplication }
-      });
-
-      // Refetch user data to get updated role
-      await apolloClient.refetchQueries({
-        include: ["CurrentUser"]
-      });
-
-      // Redirect to application form
-      router.push("/cleaner-signup");
-    } catch (error) {
-      console.error("Error initiating cleaner flow:", error);
-      throw error;
-    }
+  function goToCompanySignup(): void {
+    router.push("/company-signup");
   }
 
   /**
-   * Initiates the company admin application flow for existing users
+   * Navigate to the invite acceptance page
    */
-  async function initiateCompanyFlow(): Promise<void> {
-    try {
-      // Update role to PENDING_COMPANY_APPLICATION via mutation
-      await updateUserRole({
-        variables: { role: UserRole.PendingCompanyApplication }
-      });
-
-      // Refetch user data to get updated role
-      await apolloClient.refetchQueries({
-        include: ["CurrentUser"]
-      });
-
-      // Redirect to company application form
-      router.push("/company-signup");
-    } catch (error) {
-      console.error("Error initiating company flow:", error);
-      throw error;
-    }
+  function goToInvitePage(token: string): void {
+    router.push(`/invite/${token}`);
   }
 
   return {
     getPostAuthRedirect,
-    initiateCleanerFlow,
-    initiateCompanyFlow
+    goToCompanySignup,
+    goToInvitePage,
   };
 }

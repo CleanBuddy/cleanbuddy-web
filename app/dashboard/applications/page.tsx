@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
-import { PENDING_APPLICATIONS } from "@/lib/graphql/queries/application-queries";
-import { APPROVE_APPLICATION, REJECT_APPLICATION } from "@/lib/graphql/mutations/application-mutations";
+import {
+  usePendingCompaniesQuery,
+  useApproveCompanyMutation,
+  useRejectCompanyMutation,
+  UserRole,
+  CompanyType,
+} from "@/lib/api/_gen/gql";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,61 +20,55 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, FileText, Building2, User as UserIcon, Eye } from "lucide-react";
 import { DocumentViewer } from "@/components/document-viewer";
-import { UserRole } from "@/lib/api/_gen/gql";
 
-interface CompanyInfo {
+interface Documents {
+  identityDocumentUrl: string;
+  businessRegistrationUrl?: string | null;
+  insuranceCertificateUrl?: string | null;
+  additionalDocuments?: string[] | null;
+}
+
+interface Company {
+  id: string;
+  companyType: CompanyType;
   companyName: string;
   registrationNumber: string;
   taxId: string;
   companyStreet: string;
   companyCity: string;
   companyPostalCode: string;
-  companyCounty?: string;
+  companyCounty?: string | null;
   companyCountry: string;
-  businessType?: string;
-}
-
-interface Documents {
-  identityDocumentUrl: string;
-  businessRegistrationUrl?: string;
-  insuranceCertificateUrl?: string;
-  additionalDocuments?: string[];
-}
-
-interface Application {
-  id: string;
-  user: {
+  businessType?: string | null;
+  documents?: Documents | null;
+  message?: string | null;
+  adminUser: {
     id: string;
     displayName: string;
     email: string;
   };
-  applicationType: string;
-  status: string;
-  message?: string;
-  companyInfo?: CompanyInfo;
-  documents?: Documents;
   createdAt: string;
 }
 
 export default function ApplicationsPage() {
   const { user } = useCurrentUser();
   const { toast } = useToast();
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(PENDING_APPLICATIONS, {
+  const { data, loading, error, refetch } = usePendingCompaniesQuery({
     skip: !user || user.role !== UserRole.GlobalAdmin,
   });
 
-  const [approveApplication, { loading: approving }] = useMutation(APPROVE_APPLICATION, {
+  const [approveCompany, { loading: approving }] = useApproveCompanyMutation({
     onCompleted: () => {
       toast({
-        title: "Application Approved",
-        description: "The cleaner application has been approved successfully.",
+        title: "Company Approved",
+        description: "The company application has been approved successfully.",
       });
-      setSelectedApplication(null);
+      setSelectedCompany(null);
       refetch();
     },
     onError: (error) => {
@@ -81,13 +80,13 @@ export default function ApplicationsPage() {
     },
   });
 
-  const [rejectApplication, { loading: rejecting }] = useMutation(REJECT_APPLICATION, {
+  const [rejectCompany, { loading: rejecting }] = useRejectCompanyMutation({
     onCompleted: () => {
       toast({
-        title: "Application Rejected",
-        description: "The cleaner application has been rejected.",
+        title: "Company Rejected",
+        description: "The company application has been rejected.",
       });
-      setSelectedApplication(null);
+      setSelectedCompany(null);
       setShowRejectDialog(false);
       setRejectionReason("");
       refetch();
@@ -101,20 +100,20 @@ export default function ApplicationsPage() {
     },
   });
 
-  const applications: Application[] = data?.pendingApplications || [];
+  const companies: Company[] = (data?.pendingCompanies || []) as Company[];
 
-  const handleApprove = async (applicationId: string) => {
-    await approveApplication({
-      variables: { applicationId },
+  const handleApprove = async (companyId: string) => {
+    await approveCompany({
+      variables: { companyId },
     });
   };
 
   const handleReject = async () => {
-    if (!selectedApplication) return;
+    if (!selectedCompany) return;
 
-    await rejectApplication({
+    await rejectCompany({
       variables: {
-        applicationId: selectedApplication.id,
+        companyId: selectedCompany.id,
         reason: rejectionReason || null,
       },
     });
@@ -153,9 +152,9 @@ export default function ApplicationsPage() {
     <div className="space-y-6 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Cleaner Applications</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Company Applications</h1>
         <p className="text-muted-foreground mt-2">
-          Review and approve pending cleaner applications • {applications.length} pending
+          Review and approve pending company applications ({companies.length} pending)
         </p>
       </div>
 
@@ -172,140 +171,139 @@ export default function ApplicationsPage() {
             </Card>
           ))}
         </div>
-      ) : applications.length > 0 ? (
+      ) : companies.length > 0 ? (
         <div className="grid gap-4">
-          {applications.map((application) => (
-            <Card key={application.id} className="hover:shadow-md transition-shadow">
+          {companies.map((company) => (
+            <Card key={company.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <UserIcon className="w-6 h-6 text-primary" />
+                      <Building2 className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{application.user.displayName}</CardTitle>
+                      <CardTitle className="text-lg">{company.companyName}</CardTitle>
                       <CardDescription className="mt-1">
-                        {application.user.email}
+                        {company.adminUser.displayName} ({company.adminUser.email})
                       </CardDescription>
                       <Badge variant="secondary" className="mt-2">
-                        {application.applicationType}
+                        {company.companyType === CompanyType.Individual ? "Individual" : "Business"}
                       </Badge>
                     </div>
                   </div>
                   <div className="text-right text-sm text-muted-foreground">
-                    Applied {new Date(application.createdAt).toLocaleDateString()}
+                    Applied {new Date(company.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {application.companyInfo && (
-                  <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      Company Information
+                    </div>
+                    <div className="pl-6 space-y-1 text-sm text-muted-foreground">
+                      <p><span className="font-medium text-foreground">Name:</span> {company.companyName}</p>
+                      <p><span className="font-medium text-foreground">Registration:</span> {company.registrationNumber}</p>
+                      <p><span className="font-medium text-foreground">Tax ID:</span> {company.taxId}</p>
+                      <p><span className="font-medium text-foreground">Type:</span> {company.businessType || "N/A"}</p>
+                      <p><span className="font-medium text-foreground">Address:</span> {company.companyStreet}, {company.companyCity} {company.companyPostalCode}</p>
+                    </div>
+                  </div>
+
+                  {company.documents && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-medium">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                        Company Information
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        Documents
                       </div>
-                      <div className="pl-6 space-y-1 text-sm text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Name:</span> {application.companyInfo.companyName}</p>
-                        <p><span className="font-medium text-foreground">Registration:</span> {application.companyInfo.registrationNumber}</p>
-                        <p><span className="font-medium text-foreground">Tax ID:</span> {application.companyInfo.taxId}</p>
-                        <p><span className="font-medium text-foreground">Type:</span> {application.companyInfo.businessType || "N/A"}</p>
-                      </div>
-                    </div>
-
-                    {application.documents && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          Documents
-                        </div>
-                        <div className="pl-6 space-y-2 text-sm">
+                      <div className="pl-6 space-y-2 text-sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                          onClick={() =>
+                            setViewingDocument({
+                              url: company.documents!.identityDocumentUrl,
+                              name: "Identity Document",
+                            })
+                          }
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Identity Document
+                        </Button>
+                        {company.documents.businessRegistrationUrl && (
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
                             onClick={() =>
                               setViewingDocument({
-                                url: application.documents!.identityDocumentUrl,
-                                name: "Identity Document",
+                                url: company.documents!.businessRegistrationUrl!,
+                                name: "Business Registration",
                               })
                             }
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            Identity Document
+                            Business Registration
                           </Button>
-                          {application.documents.businessRegistrationUrl && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
-                              onClick={() =>
-                                setViewingDocument({
-                                  url: application.documents!.businessRegistrationUrl!,
-                                  name: "Business Registration",
-                                })
-                              }
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Business Registration
-                            </Button>
-                          )}
-                          {application.documents.insuranceCertificateUrl && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
-                              onClick={() =>
-                                setViewingDocument({
-                                  url: application.documents!.insuranceCertificateUrl!,
-                                  name: "Insurance Certificate",
-                                })
-                              }
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Insurance Certificate
-                            </Button>
-                          )}
-                          {application.documents.additionalDocuments && application.documents.additionalDocuments.length > 0 && (
-                            <div className="space-y-2">
-                              <p className="font-medium text-foreground">Additional Documents:</p>
-                              {application.documents.additionalDocuments.map((doc, index) => (
-                                <Button
-                                  key={index}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
-                                  onClick={() =>
-                                    setViewingDocument({
-                                      url: doc,
-                                      name: `Additional Document ${index + 1}`,
-                                    })
-                                  }
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  Document {index + 1}
-                                </Button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                        )}
+                        {company.documents.insuranceCertificateUrl && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                            onClick={() =>
+                              setViewingDocument({
+                                url: company.documents!.insuranceCertificateUrl!,
+                                name: "Insurance Certificate",
+                              })
+                            }
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Insurance Certificate
+                          </Button>
+                        )}
+                        {company.documents.additionalDocuments && company.documents.additionalDocuments.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="font-medium text-foreground">Additional Documents:</p>
+                            {company.documents.additionalDocuments.map((doc, index) => (
+                              <Button
+                                key={index}
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-primary hover:underline hover:bg-transparent justify-start"
+                                onClick={() =>
+                                  setViewingDocument({
+                                    url: doc,
+                                    name: `Additional Document ${index + 1}`,
+                                  })
+                                }
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Document {index + 1}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
 
-                {application.message && (
+                {company.message && (
                   <div className="pt-2">
                     <p className="text-sm font-medium">Message:</p>
-                    <p className="text-sm text-muted-foreground mt-1">{application.message}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{company.message}</p>
                   </div>
                 )}
 
                 <div className="flex gap-2 pt-2">
                   <Button
                     size="sm"
-                    onClick={() => handleApprove(application.id)}
+                    onClick={() => handleApprove(company.id)}
                     disabled={approving || rejecting}
                     className="flex-1"
                   >
@@ -316,7 +314,7 @@ export default function ApplicationsPage() {
                     size="sm"
                     variant="destructive"
                     onClick={() => {
-                      setSelectedApplication(application);
+                      setSelectedCompany(company);
                       setShowRejectDialog(true);
                     }}
                     disabled={approving || rejecting}
@@ -336,7 +334,7 @@ export default function ApplicationsPage() {
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Pending Applications</h3>
             <p className="text-sm text-muted-foreground">
-              All cleaner applications have been processed
+              All company applications have been processed
             </p>
           </CardContent>
         </Card>
@@ -348,7 +346,7 @@ export default function ApplicationsPage() {
           <DialogHeader>
             <DialogTitle>Reject Application</DialogTitle>
             <DialogDescription>
-              Provide a reason for rejecting this application (optional).
+              Provide a reason for rejecting this company application (optional).
             </DialogDescription>
           </DialogHeader>
 

@@ -14,7 +14,7 @@ function AuthPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const intent = searchParams.get("intent");
-  const { getPostAuthRedirect, initiateCleanerFlow, initiateCompanyFlow } = useAuthFlow();
+  const { getPostAuthRedirect } = useAuthFlow();
 
   // Store intent in localStorage before authentication
   useEffect(() => {
@@ -30,59 +30,22 @@ function AuthPageContent() {
 
   // Redirect authenticated users
   useEffect(() => {
-    async function handleAuthRedirect() {
-      if (data?.currentUser && !loading) {
-        const storedIntent = localStorage.getItem("authIntent");
-        const inviteToken = localStorage.getItem("inviteToken");
+    if (data?.currentUser && !loading) {
+      const storedIntent = localStorage.getItem("authIntent");
+      const inviteToken = localStorage.getItem("inviteToken");
 
-        // If user has an invite intent, redirect back to invite page
-        if (storedIntent === "invite" && inviteToken) {
-          router.push(`/invite/${inviteToken}`);
-          return;
-        }
-
-        // If CLIENT wants to become cleaner, initiate upgrade flow
-        if (
-          storedIntent === "cleaner" &&
-          data.currentUser.role === UserRole.Client
-        ) {
-          localStorage.removeItem("authIntent");
-          try {
-            await initiateCleanerFlow();
-          } catch (error) {
-            console.error("Failed to initiate cleaner flow:", error);
-            router.push("/cleaner-signup");
-          }
-          return;
-        }
-
-        // If CLIENT wants to register company, initiate company flow
-        if (
-          storedIntent === "company" &&
-          data.currentUser.role === UserRole.Client
-        ) {
-          localStorage.removeItem("authIntent");
-          try {
-            await initiateCompanyFlow();
-          } catch (error) {
-            console.error("Failed to initiate company flow:", error);
-            router.push("/company-signup");
-          }
-          return;
-        }
-
-        // For all other cases, use centralized redirect logic
-        const destination = getPostAuthRedirect(
-          data.currentUser.role,
-          storedIntent
-        );
-        localStorage.removeItem("authIntent");
-        router.push(destination);
+      // If user has an invite intent, redirect back to invite page
+      if (storedIntent === "invite" && inviteToken) {
+        router.push(`/invite/${inviteToken}`);
+        return;
       }
-    }
 
-    handleAuthRedirect();
-  }, [data?.currentUser, loading, router, initiateCleanerFlow, initiateCompanyFlow, getPostAuthRedirect]);
+      // Use centralized redirect logic based on user role and company status
+      const destination = getPostAuthRedirect(data.currentUser, storedIntent);
+      localStorage.removeItem("authIntent");
+      router.push(destination);
+    }
+  }, [data?.currentUser, loading, router, getPostAuthRedirect]);
 
   // Show loading skeleton while checking authentication
   if (loading) {
@@ -116,18 +79,18 @@ function AuthPageContent() {
       <div className="w-full max-w-md space-y-4">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold">
-            SaaS Starter
+            CleanBuddy
           </Link>
         </div>
 
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {intent === "cleaner" ? "Apply as a Cleaner" : intent === "company" ? "Register Your Company" : "Welcome Back"}
+              {intent === "cleaner" ? "Register as a Cleaner" : intent === "company" ? "Register Your Company" : "Welcome Back"}
             </CardTitle>
             <CardDescription>
               {intent === "cleaner"
-                ? "Sign in to continue with your cleaner application"
+                ? "Sign in to register as a cleaner company admin"
                 : intent === "company"
                 ? "Sign in to register your cleaning company"
                 : "Sign in to your account to continue"}
@@ -154,7 +117,7 @@ function AuthPageContent() {
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            ← Back to home
+            Back to home
           </Link>
         </div>
       </div>

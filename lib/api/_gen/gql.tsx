@@ -58,22 +58,6 @@ export type Address = {
   userId: Scalars['ID']['output'];
 };
 
-export type Application = {
-  __typename?: 'Application';
-  applicationType: ApplicationType;
-  companyInfo?: Maybe<CompanyInfo>;
-  createdAt: Scalars['Time']['output'];
-  documents?: Maybe<ApplicationDocuments>;
-  id: Scalars['ID']['output'];
-  message?: Maybe<Scalars['String']['output']>;
-  rejectionReason?: Maybe<Scalars['String']['output']>;
-  reviewedAt?: Maybe<Scalars['Time']['output']>;
-  reviewedBy?: Maybe<User>;
-  status: ApplicationStatus;
-  updatedAt: Scalars['Time']['output'];
-  user: User;
-};
-
 export type ApplicationDocuments = {
   __typename?: 'ApplicationDocuments';
   additionalDocuments?: Maybe<Array<Scalars['String']['output']>>;
@@ -88,17 +72,6 @@ export type ApplicationDocumentsInput = {
   identityDocument: Scalars['Upload']['input'];
   insuranceCertificate?: InputMaybe<Scalars['Upload']['input']>;
 };
-
-export enum ApplicationStatus {
-  Approved = 'APPROVED',
-  Pending = 'PENDING',
-  Rejected = 'REJECTED'
-}
-
-export enum ApplicationType {
-  Cleaner = 'CLEANER',
-  CompanyAdmin = 'COMPANY_ADMIN'
-}
 
 export enum AuthIdentityKind {
   GoogleOAuth2 = 'GoogleOAuth2'
@@ -289,7 +262,6 @@ export type CleanerProfile = {
   companyId?: Maybe<Scalars['ID']['output']>;
   completedBookings: Scalars['Int']['output'];
   createdAt: Scalars['Time']['output'];
-  hourlyRate: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   identityVerified: Scalars['Boolean']['output'];
   isActive: Scalars['Boolean']['output'];
@@ -325,9 +297,7 @@ export type CleanerProfileFiltersInput = {
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
   isAvailableToday?: InputMaybe<Scalars['Boolean']['input']>;
   isVerified?: InputMaybe<Scalars['Boolean']['input']>;
-  maxHourlyRate?: InputMaybe<Scalars['Int']['input']>;
   maxRating?: InputMaybe<Scalars['Float']['input']>;
-  minHourlyRate?: InputMaybe<Scalars['Int']['input']>;
   minRating?: InputMaybe<Scalars['Float']['input']>;
   neighborhood?: InputMaybe<Scalars['String']['input']>;
   postalCode?: InputMaybe<Scalars['String']['input']>;
@@ -359,23 +329,13 @@ export type Company = {
   documents?: Maybe<ApplicationDocuments>;
   id: Scalars['ID']['output'];
   isActive: Scalars['Boolean']['output'];
+  message?: Maybe<Scalars['String']['output']>;
   registrationNumber: Scalars['String']['output'];
+  rejectionReason?: Maybe<Scalars['String']['output']>;
+  status: CompanyStatus;
   taxId: Scalars['String']['output'];
   totalCleaners: Scalars['Int']['output'];
   updatedAt: Scalars['Time']['output'];
-};
-
-export type CompanyInfo = {
-  __typename?: 'CompanyInfo';
-  businessType?: Maybe<Scalars['String']['output']>;
-  companyCity: Scalars['String']['output'];
-  companyCountry: Scalars['String']['output'];
-  companyCounty?: Maybe<Scalars['String']['output']>;
-  companyName: Scalars['String']['output'];
-  companyPostalCode: Scalars['String']['output'];
-  companyStreet: Scalars['String']['output'];
-  registrationNumber: Scalars['String']['output'];
-  taxId: Scalars['String']['output'];
 };
 
 export type CompanyInfoInput = {
@@ -389,6 +349,12 @@ export type CompanyInfoInput = {
   registrationNumber: Scalars['String']['input'];
   taxId: Scalars['String']['input'];
 };
+
+export enum CompanyStatus {
+  Approved = 'APPROVED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
 
 export enum CompanyType {
   Business = 'BUSINESS',
@@ -470,9 +436,15 @@ export type CreateCleanerInviteInput = {
 
 export type CreateCleanerProfileInput = {
   bio?: InputMaybe<Scalars['String']['input']>;
-  hourlyRate: Scalars['Int']['input'];
   profilePicture?: InputMaybe<Scalars['String']['input']>;
   serviceAreaInputs: Array<CreateServiceAreaInput>;
+};
+
+export type CreateCompanyInput = {
+  companyInfo: CompanyInfoInput;
+  companyType: CompanyType;
+  documents: ApplicationDocumentsInput;
+  message?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreatePayoutBatchInput = {
@@ -529,7 +501,7 @@ export type Mutation = {
   acceptCleanerInvite: AcceptCleanerInviteResult;
   addCleanerResponse: Review;
   addServiceArea: ServiceArea;
-  approveApplication: Application;
+  approveCompany: Company;
   authWithIdentityProvider: AuthResult;
   authWithRefreshToken: AuthResult;
   bulkCreateAvailability: Array<Availability>;
@@ -542,6 +514,7 @@ export type Mutation = {
   createBooking: Booking;
   createCleanerInvite: CleanerInviteResult;
   createCleanerProfile: CleanerProfile;
+  createCompany: Company;
   createPayoutBatch: PayoutBatch;
   createReview: Review;
   createServiceDefinition: ServiceDefinition;
@@ -556,12 +529,11 @@ export type Mutation = {
   markReviewHelpful: Review;
   moderateReview: Review;
   processPayoutBatch: PayoutBatch;
-  rejectApplication: Application;
+  rejectCompany: Company;
   revokeCleanerInvite: CleanerInvite;
   setDefaultAddress: Address;
   signOut: Scalars['Void']['output'];
   startBooking: Booking;
-  submitApplication: Application;
   updateAddOnDefinition: ServiceAddOnDefinition;
   updateAddress: Address;
   updateAvailability: Availability;
@@ -573,7 +545,6 @@ export type Mutation = {
   updateReview: Review;
   updateServiceArea: ServiceArea;
   updateServiceDefinition: ServiceDefinition;
-  updateUserRole: User;
 };
 
 
@@ -592,8 +563,8 @@ export type MutationAddServiceAreaArgs = {
 };
 
 
-export type MutationApproveApplicationArgs = {
-  applicationId: Scalars['ID']['input'];
+export type MutationApproveCompanyArgs = {
+  companyId: Scalars['ID']['input'];
 };
 
 
@@ -660,6 +631,11 @@ export type MutationCreateCleanerProfileArgs = {
 };
 
 
+export type MutationCreateCompanyArgs = {
+  input: CreateCompanyInput;
+};
+
+
 export type MutationCreatePayoutBatchArgs = {
   input: CreatePayoutBatchInput;
 };
@@ -721,8 +697,8 @@ export type MutationProcessPayoutBatchArgs = {
 };
 
 
-export type MutationRejectApplicationArgs = {
-  applicationId: Scalars['ID']['input'];
+export type MutationRejectCompanyArgs = {
+  companyId: Scalars['ID']['input'];
   reason?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -739,11 +715,6 @@ export type MutationSetDefaultAddressArgs = {
 
 export type MutationStartBookingArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationSubmitApplicationArgs = {
-  input: SubmitApplicationInput;
 };
 
 
@@ -802,11 +773,6 @@ export type MutationUpdateServiceDefinitionArgs = {
   input: UpdateServiceDefinitionInput;
 };
 
-
-export type MutationUpdateUserRoleArgs = {
-  role: UserRole;
-};
-
 export enum PaymentMethod {
   BankTransfer = 'BANK_TRANSFER',
   Card = 'CARD',
@@ -837,7 +803,6 @@ export type Query = {
   address?: Maybe<Address>;
   allBookings: BookingConnection;
   allTransactions: TransactionConnection;
-  application?: Maybe<Application>;
   availability?: Maybe<Availability>;
   availabilityForCleaner: Array<Availability>;
   availableCleaners: Array<CleanerProfile>;
@@ -854,7 +819,6 @@ export type Query = {
   generateDocumentSignedUrl: Scalars['String']['output'];
   isCleanerAvailable: Scalars['Boolean']['output'];
   myAddresses: Array<Address>;
-  myApplications: Array<Application>;
   myAvailability: Array<Availability>;
   myBookings: BookingConnection;
   myCleanerProfile?: Maybe<CleanerProfile>;
@@ -869,7 +833,7 @@ export type Query = {
   myTransactions: TransactionConnection;
   payoutBatch?: Maybe<PayoutBatch>;
   payoutBatches: Array<PayoutBatch>;
-  pendingApplications: Array<Application>;
+  pendingCompanies: Array<Company>;
   review?: Maybe<Review>;
   reviewByBooking?: Maybe<Review>;
   reviewsForCleaner: ReviewConnection;
@@ -879,7 +843,6 @@ export type Query = {
   serviceAreasByCleanerProfile: Array<ServiceArea>;
   serviceDefinition?: Maybe<ServiceDefinition>;
   serviceDefinitions: Array<ServiceDefinition>;
-  tierRateRanges: Array<TierRateRange>;
   transaction?: Maybe<Transaction>;
   transactionByStripePaymentId?: Maybe<Transaction>;
   transactionsByBooking: Array<Transaction>;
@@ -917,11 +880,6 @@ export type QueryAllTransactionsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryApplicationArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
@@ -1272,20 +1230,6 @@ export enum ServiceType {
   MoveInOut = 'MOVE_IN_OUT'
 }
 
-export type SubmitApplicationInput = {
-  applicationType: ApplicationType;
-  companyInfo?: InputMaybe<CompanyInfoInput>;
-  documents?: InputMaybe<ApplicationDocumentsInput>;
-  message?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type TierRateRange = {
-  __typename?: 'TierRateRange';
-  maxRate: Scalars['Int']['output'];
-  minRate: Scalars['Int']['output'];
-  tier: CleanerTier;
-};
-
 export type Transaction = {
   __typename?: 'Transaction';
   amount: Scalars['Int']['output'];
@@ -1402,7 +1346,6 @@ export type UpdateBookingInput = {
 
 export type UpdateCleanerProfileInput = {
   bio?: InputMaybe<Scalars['String']['input']>;
-  hourlyRate?: InputMaybe<Scalars['Int']['input']>;
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
   isAvailableToday?: InputMaybe<Scalars['Boolean']['input']>;
   profilePicture?: InputMaybe<Scalars['String']['input']>;
@@ -1453,11 +1396,11 @@ export type UpdateServiceDefinitionInput = {
 
 export type User = {
   __typename?: 'User';
-  applications: Array<Application>;
+  cleanerProfile?: Maybe<CleanerProfile>;
+  company?: Maybe<Company>;
   displayName: Scalars['String']['output'];
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  pendingCleanerApplication?: Maybe<Application>;
   role: UserRole;
 };
 
@@ -1475,15 +1418,9 @@ export type UserEdge = {
 
 export enum UserRole {
   Cleaner = 'CLEANER',
+  CleanerAdmin = 'CLEANER_ADMIN',
   Client = 'CLIENT',
-  CompanyAdmin = 'COMPANY_ADMIN',
-  GlobalAdmin = 'GLOBAL_ADMIN',
-  PendingApplication = 'PENDING_APPLICATION',
-  PendingCleaner = 'PENDING_CLEANER',
-  PendingCompanyAdmin = 'PENDING_COMPANY_ADMIN',
-  PendingCompanyApplication = 'PENDING_COMPANY_APPLICATION',
-  RejectedCleaner = 'REJECTED_CLEANER',
-  RejectedCompanyAdmin = 'REJECTED_COMPANY_ADMIN'
+  GlobalAdmin = 'GLOBAL_ADMIN'
 }
 
 export type ValidateCleanerInviteResult = {
@@ -1493,45 +1430,6 @@ export type ValidateCleanerInviteResult = {
   invite?: Maybe<CleanerInvite>;
   valid: Scalars['Boolean']['output'];
 };
-
-export type SubmitApplicationMutationVariables = Exact<{
-  input: SubmitApplicationInput;
-}>;
-
-
-export type SubmitApplicationMutation = { __typename?: 'Mutation', submitApplication: { __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, message?: string | null, createdAt: string, user: { __typename?: 'User', id: string, displayName: string, email: string } } };
-
-export type ApproveApplicationMutationVariables = Exact<{
-  applicationId: Scalars['ID']['input'];
-}>;
-
-
-export type ApproveApplicationMutation = { __typename?: 'Mutation', approveApplication: { __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, reviewedAt?: string | null, reviewedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null } };
-
-export type RejectApplicationMutationVariables = Exact<{
-  applicationId: Scalars['ID']['input'];
-  reason?: InputMaybe<Scalars['String']['input']>;
-}>;
-
-
-export type RejectApplicationMutation = { __typename?: 'Mutation', rejectApplication: { __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, reviewedAt?: string | null, reviewedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null } };
-
-export type MyApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MyApplicationsQuery = { __typename?: 'Query', myApplications: Array<{ __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, message?: string | null, createdAt: string, updatedAt: string, reviewedAt?: string | null, reviewedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null }> };
-
-export type PendingApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type PendingApplicationsQuery = { __typename?: 'Query', pendingApplications: Array<{ __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, message?: string | null, createdAt: string, user: { __typename?: 'User', id: string, displayName: string, email: string } }> };
-
-export type ApplicationQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
-
-
-export type ApplicationQuery = { __typename?: 'Query', application?: { __typename?: 'Application', id: string, applicationType: ApplicationType, status: ApplicationStatus, message?: string | null, createdAt: string, updatedAt: string, reviewedAt?: string | null, user: { __typename?: 'User', id: string, displayName: string, email: string }, reviewedBy?: { __typename?: 'User', id: string, displayName: string, email: string } | null } | null };
 
 export type AuthWithIdentityProviderMutationVariables = Exact<{
   code: Scalars['String']['input'];
@@ -1552,7 +1450,7 @@ export type AuthWithRefreshTokenMutation = { __typename?: 'Mutation', authWithRe
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, pendingCleanerApplication?: { __typename?: 'Application', id: string, status: ApplicationStatus, applicationType: ApplicationType, createdAt: string, rejectionReason?: string | null } | null } | null };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, company?: { __typename?: 'Company', id: string, status: CompanyStatus, companyName: string, rejectionReason?: string | null } | null, cleanerProfile?: { __typename?: 'CleanerProfile', id: string, tier: CleanerTier, isActive: boolean, isVerified: boolean } | null } | null };
 
 export type ValidateCleanerInviteTokenQueryVariables = Exact<{
   token: Scalars['String']['input'];
@@ -1569,7 +1467,7 @@ export type MyCompanyInvitesQuery = { __typename?: 'Query', myCompanyInvites: Ar
 export type MyCompanyCleanersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyCompanyCleanersQuery = { __typename?: 'Query', myCompanyCleaners: Array<{ __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, hourlyRate: number, totalBookings: number, completedBookings: number, averageRating: number, totalReviews: number, isActive: boolean, isVerified: boolean, createdAt: string, user: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+export type MyCompanyCleanersQuery = { __typename?: 'Query', myCompanyCleaners: Array<{ __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, totalBookings: number, completedBookings: number, averageRating: number, totalReviews: number, isActive: boolean, isVerified: boolean, createdAt: string, user: { __typename?: 'User', id: string, displayName: string, email: string } }> };
 
 export type CleanerInviteQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1602,43 +1500,57 @@ export type RevokeCleanerInviteMutation = { __typename?: 'Mutation', revokeClean
 export type MyCleanerProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyCleanerProfileQuery = { __typename?: 'Query', myCleanerProfile?: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, hourlyRate: number, isActive: boolean, isVerified: boolean, isAvailableToday: boolean, averageRating: number, totalReviews: number, totalBookings: number, completedBookings: number, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string, travelFee: number, isPreferred: boolean }> } | null };
-
-export type TierRateRangesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type TierRateRangesQuery = { __typename?: 'Query', tierRateRanges: Array<{ __typename?: 'TierRateRange', tier: CleanerTier, minRate: number, maxRate: number }> };
+export type MyCleanerProfileQuery = { __typename?: 'Query', myCleanerProfile?: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, profilePicture?: string | null, tier: CleanerTier, isActive: boolean, isVerified: boolean, isAvailableToday: boolean, averageRating: number, totalReviews: number, totalBookings: number, completedBookings: number, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string, travelFee: number, isPreferred: boolean }> } | null };
 
 export type CreateCleanerProfileMutationVariables = Exact<{
   input: CreateCleanerProfileInput;
 }>;
 
 
-export type CreateCleanerProfileMutation = { __typename?: 'Mutation', createCleanerProfile: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, tier: CleanerTier, hourlyRate: number, isActive: boolean, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string }> } };
+export type CreateCleanerProfileMutation = { __typename?: 'Mutation', createCleanerProfile: { __typename?: 'CleanerProfile', id: string, userId: string, companyId?: string | null, bio?: string | null, tier: CleanerTier, isActive: boolean, createdAt: string, company?: { __typename?: 'Company', id: string, companyName: string } | null, serviceAreas: Array<{ __typename?: 'ServiceArea', id: string, city: string, neighborhood: string, postalCode: string }> } };
 
 export type UpdateCleanerProfileMutationVariables = Exact<{
   input: UpdateCleanerProfileInput;
 }>;
 
 
-export type UpdateCleanerProfileMutation = { __typename?: 'Mutation', updateCleanerProfile: { __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, hourlyRate: number, isActive: boolean, isAvailableToday: boolean } };
+export type UpdateCleanerProfileMutation = { __typename?: 'Mutation', updateCleanerProfile: { __typename?: 'CleanerProfile', id: string, bio?: string | null, profilePicture?: string | null, isActive: boolean, isAvailableToday: boolean } };
 
 export type MyCompanyQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyCompanyQuery = { __typename?: 'Query', myCompany?: { __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null } | null };
+export type MyCompanyQuery = { __typename?: 'Query', myCompany?: { __typename?: 'Company', id: string, companyType: CompanyType, status: CompanyStatus, rejectionReason?: string | null, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, message?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null } | null };
 
 export type CompanyQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type CompanyQuery = { __typename?: 'Query', company?: { __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } } | null };
+export type CompanyQuery = { __typename?: 'Query', company?: { __typename?: 'Company', id: string, companyType: CompanyType, status: CompanyStatus, rejectionReason?: string | null, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, message?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, updatedAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } } | null };
 
 export type CompaniesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CompaniesQuery = { __typename?: 'Query', companies: Array<{ __typename?: 'Company', id: string, companyName: string, registrationNumber: string, taxId: string, companyCity: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+export type CompaniesQuery = { __typename?: 'Query', companies: Array<{ __typename?: 'Company', id: string, companyType: CompanyType, status: CompanyStatus, companyName: string, registrationNumber: string, taxId: string, companyCity: string, businessType?: string | null, isActive: boolean, totalCleaners: number, activeCleaners: number, createdAt: string, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+
+export type PendingCompaniesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PendingCompaniesQuery = { __typename?: 'Query', pendingCompanies: Array<{ __typename?: 'Company', id: string, companyType: CompanyType, status: CompanyStatus, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, message?: string | null, createdAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null, adminUser: { __typename?: 'User', id: string, displayName: string, email: string } }> };
+
+export type GenerateDocumentSignedUrlQueryVariables = Exact<{
+  documentUrl: Scalars['String']['input'];
+}>;
+
+
+export type GenerateDocumentSignedUrlQuery = { __typename?: 'Query', generateDocumentSignedUrl: string };
+
+export type CreateCompanyMutationVariables = Exact<{
+  input: CreateCompanyInput;
+}>;
+
+
+export type CreateCompanyMutation = { __typename?: 'Mutation', createCompany: { __typename?: 'Company', id: string, companyType: CompanyType, status: CompanyStatus, companyName: string, registrationNumber: string, taxId: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, companyCountry: string, businessType?: string | null, message?: string | null, createdAt: string, documents?: { __typename?: 'ApplicationDocuments', identityDocumentUrl: string, businessRegistrationUrl?: string | null, insuranceCertificateUrl?: string | null, additionalDocuments?: Array<string> | null } | null } };
 
 export type UpdateCompanyMutationVariables = Exact<{
   input: UpdateCompanyInput;
@@ -1647,12 +1559,20 @@ export type UpdateCompanyMutationVariables = Exact<{
 
 export type UpdateCompanyMutation = { __typename?: 'Mutation', updateCompany: { __typename?: 'Company', id: string, companyName: string, companyStreet: string, companyCity: string, companyPostalCode: string, companyCounty?: string | null, businessType?: string | null, isActive: boolean, updatedAt: string } };
 
-export type UpdateUserRoleMutationVariables = Exact<{
-  role: UserRole;
+export type ApproveCompanyMutationVariables = Exact<{
+  companyId: Scalars['ID']['input'];
 }>;
 
 
-export type UpdateUserRoleMutation = { __typename?: 'Mutation', updateUserRole: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string } };
+export type ApproveCompanyMutation = { __typename?: 'Mutation', approveCompany: { __typename?: 'Company', id: string, status: CompanyStatus, companyName: string } };
+
+export type RejectCompanyMutationVariables = Exact<{
+  companyId: Scalars['ID']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type RejectCompanyMutation = { __typename?: 'Mutation', rejectCompany: { __typename?: 'Company', id: string, status: CompanyStatus, rejectionReason?: string | null, companyName: string } };
 
 export type SignOutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1672,285 +1592,6 @@ export type UpdateCurrentUserMutationVariables = Exact<{
 export type UpdateCurrentUserMutation = { __typename?: 'Mutation', updateCurrentUser: { __typename?: 'User', id: string, displayName: string, email: string, role: UserRole } };
 
 
-export const SubmitApplicationDocument = gql`
-    mutation SubmitApplication($input: SubmitApplicationInput!) {
-  submitApplication(input: $input) {
-    id
-    applicationType
-    status
-    message
-    createdAt
-    user {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-export type SubmitApplicationMutationFn = Apollo.MutationFunction<SubmitApplicationMutation, SubmitApplicationMutationVariables>;
-
-/**
- * __useSubmitApplicationMutation__
- *
- * To run a mutation, you first call `useSubmitApplicationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSubmitApplicationMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [submitApplicationMutation, { data, loading, error }] = useSubmitApplicationMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useSubmitApplicationMutation(baseOptions?: Apollo.MutationHookOptions<SubmitApplicationMutation, SubmitApplicationMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<SubmitApplicationMutation, SubmitApplicationMutationVariables>(SubmitApplicationDocument, options);
-      }
-export type SubmitApplicationMutationHookResult = ReturnType<typeof useSubmitApplicationMutation>;
-export type SubmitApplicationMutationResult = Apollo.MutationResult<SubmitApplicationMutation>;
-export type SubmitApplicationMutationOptions = Apollo.BaseMutationOptions<SubmitApplicationMutation, SubmitApplicationMutationVariables>;
-export const ApproveApplicationDocument = gql`
-    mutation ApproveApplication($applicationId: ID!) {
-  approveApplication(applicationId: $applicationId) {
-    id
-    applicationType
-    status
-    reviewedAt
-    reviewedBy {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-export type ApproveApplicationMutationFn = Apollo.MutationFunction<ApproveApplicationMutation, ApproveApplicationMutationVariables>;
-
-/**
- * __useApproveApplicationMutation__
- *
- * To run a mutation, you first call `useApproveApplicationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useApproveApplicationMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [approveApplicationMutation, { data, loading, error }] = useApproveApplicationMutation({
- *   variables: {
- *      applicationId: // value for 'applicationId'
- *   },
- * });
- */
-export function useApproveApplicationMutation(baseOptions?: Apollo.MutationHookOptions<ApproveApplicationMutation, ApproveApplicationMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<ApproveApplicationMutation, ApproveApplicationMutationVariables>(ApproveApplicationDocument, options);
-      }
-export type ApproveApplicationMutationHookResult = ReturnType<typeof useApproveApplicationMutation>;
-export type ApproveApplicationMutationResult = Apollo.MutationResult<ApproveApplicationMutation>;
-export type ApproveApplicationMutationOptions = Apollo.BaseMutationOptions<ApproveApplicationMutation, ApproveApplicationMutationVariables>;
-export const RejectApplicationDocument = gql`
-    mutation RejectApplication($applicationId: ID!, $reason: String) {
-  rejectApplication(applicationId: $applicationId, reason: $reason) {
-    id
-    applicationType
-    status
-    reviewedAt
-    reviewedBy {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-export type RejectApplicationMutationFn = Apollo.MutationFunction<RejectApplicationMutation, RejectApplicationMutationVariables>;
-
-/**
- * __useRejectApplicationMutation__
- *
- * To run a mutation, you first call `useRejectApplicationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useRejectApplicationMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [rejectApplicationMutation, { data, loading, error }] = useRejectApplicationMutation({
- *   variables: {
- *      applicationId: // value for 'applicationId'
- *      reason: // value for 'reason'
- *   },
- * });
- */
-export function useRejectApplicationMutation(baseOptions?: Apollo.MutationHookOptions<RejectApplicationMutation, RejectApplicationMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<RejectApplicationMutation, RejectApplicationMutationVariables>(RejectApplicationDocument, options);
-      }
-export type RejectApplicationMutationHookResult = ReturnType<typeof useRejectApplicationMutation>;
-export type RejectApplicationMutationResult = Apollo.MutationResult<RejectApplicationMutation>;
-export type RejectApplicationMutationOptions = Apollo.BaseMutationOptions<RejectApplicationMutation, RejectApplicationMutationVariables>;
-export const MyApplicationsDocument = gql`
-    query MyApplications {
-  myApplications {
-    id
-    applicationType
-    status
-    message
-    createdAt
-    updatedAt
-    reviewedAt
-    reviewedBy {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-
-/**
- * __useMyApplicationsQuery__
- *
- * To run a query within a React component, call `useMyApplicationsQuery` and pass it any options that fit your needs.
- * When your component renders, `useMyApplicationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useMyApplicationsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useMyApplicationsQuery(baseOptions?: Apollo.QueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
-      }
-export function useMyApplicationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
-        }
-export function useMyApplicationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
-        }
-export type MyApplicationsQueryHookResult = ReturnType<typeof useMyApplicationsQuery>;
-export type MyApplicationsLazyQueryHookResult = ReturnType<typeof useMyApplicationsLazyQuery>;
-export type MyApplicationsSuspenseQueryHookResult = ReturnType<typeof useMyApplicationsSuspenseQuery>;
-export type MyApplicationsQueryResult = Apollo.QueryResult<MyApplicationsQuery, MyApplicationsQueryVariables>;
-export const PendingApplicationsDocument = gql`
-    query PendingApplications {
-  pendingApplications {
-    id
-    applicationType
-    status
-    message
-    createdAt
-    user {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-
-/**
- * __usePendingApplicationsQuery__
- *
- * To run a query within a React component, call `usePendingApplicationsQuery` and pass it any options that fit your needs.
- * When your component renders, `usePendingApplicationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = usePendingApplicationsQuery({
- *   variables: {
- *   },
- * });
- */
-export function usePendingApplicationsQuery(baseOptions?: Apollo.QueryHookOptions<PendingApplicationsQuery, PendingApplicationsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<PendingApplicationsQuery, PendingApplicationsQueryVariables>(PendingApplicationsDocument, options);
-      }
-export function usePendingApplicationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PendingApplicationsQuery, PendingApplicationsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<PendingApplicationsQuery, PendingApplicationsQueryVariables>(PendingApplicationsDocument, options);
-        }
-export function usePendingApplicationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PendingApplicationsQuery, PendingApplicationsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<PendingApplicationsQuery, PendingApplicationsQueryVariables>(PendingApplicationsDocument, options);
-        }
-export type PendingApplicationsQueryHookResult = ReturnType<typeof usePendingApplicationsQuery>;
-export type PendingApplicationsLazyQueryHookResult = ReturnType<typeof usePendingApplicationsLazyQuery>;
-export type PendingApplicationsSuspenseQueryHookResult = ReturnType<typeof usePendingApplicationsSuspenseQuery>;
-export type PendingApplicationsQueryResult = Apollo.QueryResult<PendingApplicationsQuery, PendingApplicationsQueryVariables>;
-export const ApplicationDocument = gql`
-    query Application($id: ID!) {
-  application(id: $id) {
-    id
-    applicationType
-    status
-    message
-    createdAt
-    updatedAt
-    reviewedAt
-    user {
-      id
-      displayName
-      email
-    }
-    reviewedBy {
-      id
-      displayName
-      email
-    }
-  }
-}
-    `;
-
-/**
- * __useApplicationQuery__
- *
- * To run a query within a React component, call `useApplicationQuery` and pass it any options that fit your needs.
- * When your component renders, `useApplicationQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useApplicationQuery({
- *   variables: {
- *      id: // value for 'id'
- *   },
- * });
- */
-export function useApplicationQuery(baseOptions: Apollo.QueryHookOptions<ApplicationQuery, ApplicationQueryVariables> & ({ variables: ApplicationQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ApplicationQuery, ApplicationQueryVariables>(ApplicationDocument, options);
-      }
-export function useApplicationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ApplicationQuery, ApplicationQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ApplicationQuery, ApplicationQueryVariables>(ApplicationDocument, options);
-        }
-export function useApplicationSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationQuery, ApplicationQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<ApplicationQuery, ApplicationQueryVariables>(ApplicationDocument, options);
-        }
-export type ApplicationQueryHookResult = ReturnType<typeof useApplicationQuery>;
-export type ApplicationLazyQueryHookResult = ReturnType<typeof useApplicationLazyQuery>;
-export type ApplicationSuspenseQueryHookResult = ReturnType<typeof useApplicationSuspenseQuery>;
-export type ApplicationQueryResult = Apollo.QueryResult<ApplicationQuery, ApplicationQueryVariables>;
 export const AuthWithIdentityProviderDocument = gql`
     mutation AuthWithIdentityProvider($code: String!, $kind: AuthIdentityKind!, $intent: String) {
   authWithIdentityProvider(code: $code, kind: $kind, intent: $intent) {
@@ -2028,12 +1669,17 @@ export const CurrentUserDocument = gql`
     displayName
     role
     email
-    pendingCleanerApplication {
+    company {
       id
       status
-      applicationType
-      createdAt
+      companyName
       rejectionReason
+    }
+    cleanerProfile {
+      id
+      tier
+      isActive
+      isVerified
     }
   }
 }
@@ -2184,7 +1830,6 @@ export const MyCompanyCleanersDocument = gql`
     bio
     profilePicture
     tier
-    hourlyRate
     totalBookings
     completedBookings
     averageRating
@@ -2420,7 +2065,6 @@ export const MyCleanerProfileDocument = gql`
     bio
     profilePicture
     tier
-    hourlyRate
     isActive
     isVerified
     isAvailableToday
@@ -2476,47 +2120,6 @@ export type MyCleanerProfileQueryHookResult = ReturnType<typeof useMyCleanerProf
 export type MyCleanerProfileLazyQueryHookResult = ReturnType<typeof useMyCleanerProfileLazyQuery>;
 export type MyCleanerProfileSuspenseQueryHookResult = ReturnType<typeof useMyCleanerProfileSuspenseQuery>;
 export type MyCleanerProfileQueryResult = Apollo.QueryResult<MyCleanerProfileQuery, MyCleanerProfileQueryVariables>;
-export const TierRateRangesDocument = gql`
-    query TierRateRanges {
-  tierRateRanges {
-    tier
-    minRate
-    maxRate
-  }
-}
-    `;
-
-/**
- * __useTierRateRangesQuery__
- *
- * To run a query within a React component, call `useTierRateRangesQuery` and pass it any options that fit your needs.
- * When your component renders, `useTierRateRangesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useTierRateRangesQuery({
- *   variables: {
- *   },
- * });
- */
-export function useTierRateRangesQuery(baseOptions?: Apollo.QueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
-      }
-export function useTierRateRangesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
-        }
-export function useTierRateRangesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<TierRateRangesQuery, TierRateRangesQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<TierRateRangesQuery, TierRateRangesQueryVariables>(TierRateRangesDocument, options);
-        }
-export type TierRateRangesQueryHookResult = ReturnType<typeof useTierRateRangesQuery>;
-export type TierRateRangesLazyQueryHookResult = ReturnType<typeof useTierRateRangesLazyQuery>;
-export type TierRateRangesSuspenseQueryHookResult = ReturnType<typeof useTierRateRangesSuspenseQuery>;
-export type TierRateRangesQueryResult = Apollo.QueryResult<TierRateRangesQuery, TierRateRangesQueryVariables>;
 export const CreateCleanerProfileDocument = gql`
     mutation CreateCleanerProfile($input: CreateCleanerProfileInput!) {
   createCleanerProfile(input: $input) {
@@ -2525,7 +2128,6 @@ export const CreateCleanerProfileDocument = gql`
     companyId
     bio
     tier
-    hourlyRate
     isActive
     createdAt
     company {
@@ -2573,7 +2175,6 @@ export const UpdateCleanerProfileDocument = gql`
     id
     bio
     profilePicture
-    hourlyRate
     isActive
     isAvailableToday
   }
@@ -2609,6 +2210,9 @@ export const MyCompanyDocument = gql`
     query MyCompany {
   myCompany {
     id
+    companyType
+    status
+    rejectionReason
     companyName
     registrationNumber
     taxId
@@ -2624,6 +2228,7 @@ export const MyCompanyDocument = gql`
       insuranceCertificateUrl
       additionalDocuments
     }
+    message
     isActive
     totalCleaners
     activeCleaners
@@ -2668,6 +2273,9 @@ export const CompanyDocument = gql`
     query Company($id: ID!) {
   company(id: $id) {
     id
+    companyType
+    status
+    rejectionReason
     companyName
     registrationNumber
     taxId
@@ -2677,6 +2285,13 @@ export const CompanyDocument = gql`
     companyCounty
     companyCountry
     businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
     isActive
     totalCleaners
     activeCleaners
@@ -2727,6 +2342,8 @@ export const CompaniesDocument = gql`
     query Companies {
   companies {
     id
+    companyType
+    status
     companyName
     registrationNumber
     taxId
@@ -2776,6 +2393,159 @@ export type CompaniesQueryHookResult = ReturnType<typeof useCompaniesQuery>;
 export type CompaniesLazyQueryHookResult = ReturnType<typeof useCompaniesLazyQuery>;
 export type CompaniesSuspenseQueryHookResult = ReturnType<typeof useCompaniesSuspenseQuery>;
 export type CompaniesQueryResult = Apollo.QueryResult<CompaniesQuery, CompaniesQueryVariables>;
+export const PendingCompaniesDocument = gql`
+    query PendingCompanies {
+  pendingCompanies {
+    id
+    companyType
+    status
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __usePendingCompaniesQuery__
+ *
+ * To run a query within a React component, call `usePendingCompaniesQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePendingCompaniesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePendingCompaniesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePendingCompaniesQuery(baseOptions?: Apollo.QueryHookOptions<PendingCompaniesQuery, PendingCompaniesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<PendingCompaniesQuery, PendingCompaniesQueryVariables>(PendingCompaniesDocument, options);
+      }
+export function usePendingCompaniesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PendingCompaniesQuery, PendingCompaniesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<PendingCompaniesQuery, PendingCompaniesQueryVariables>(PendingCompaniesDocument, options);
+        }
+export function usePendingCompaniesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PendingCompaniesQuery, PendingCompaniesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PendingCompaniesQuery, PendingCompaniesQueryVariables>(PendingCompaniesDocument, options);
+        }
+export type PendingCompaniesQueryHookResult = ReturnType<typeof usePendingCompaniesQuery>;
+export type PendingCompaniesLazyQueryHookResult = ReturnType<typeof usePendingCompaniesLazyQuery>;
+export type PendingCompaniesSuspenseQueryHookResult = ReturnType<typeof usePendingCompaniesSuspenseQuery>;
+export type PendingCompaniesQueryResult = Apollo.QueryResult<PendingCompaniesQuery, PendingCompaniesQueryVariables>;
+export const GenerateDocumentSignedUrlDocument = gql`
+    query GenerateDocumentSignedUrl($documentUrl: String!) {
+  generateDocumentSignedUrl(documentUrl: $documentUrl)
+}
+    `;
+
+/**
+ * __useGenerateDocumentSignedUrlQuery__
+ *
+ * To run a query within a React component, call `useGenerateDocumentSignedUrlQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGenerateDocumentSignedUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGenerateDocumentSignedUrlQuery({
+ *   variables: {
+ *      documentUrl: // value for 'documentUrl'
+ *   },
+ * });
+ */
+export function useGenerateDocumentSignedUrlQuery(baseOptions: Apollo.QueryHookOptions<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables> & ({ variables: GenerateDocumentSignedUrlQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>(GenerateDocumentSignedUrlDocument, options);
+      }
+export function useGenerateDocumentSignedUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>(GenerateDocumentSignedUrlDocument, options);
+        }
+export function useGenerateDocumentSignedUrlSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>(GenerateDocumentSignedUrlDocument, options);
+        }
+export type GenerateDocumentSignedUrlQueryHookResult = ReturnType<typeof useGenerateDocumentSignedUrlQuery>;
+export type GenerateDocumentSignedUrlLazyQueryHookResult = ReturnType<typeof useGenerateDocumentSignedUrlLazyQuery>;
+export type GenerateDocumentSignedUrlSuspenseQueryHookResult = ReturnType<typeof useGenerateDocumentSignedUrlSuspenseQuery>;
+export type GenerateDocumentSignedUrlQueryResult = Apollo.QueryResult<GenerateDocumentSignedUrlQuery, GenerateDocumentSignedUrlQueryVariables>;
+export const CreateCompanyDocument = gql`
+    mutation CreateCompany($input: CreateCompanyInput!) {
+  createCompany(input: $input) {
+    id
+    companyType
+    status
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
+    createdAt
+  }
+}
+    `;
+export type CreateCompanyMutationFn = Apollo.MutationFunction<CreateCompanyMutation, CreateCompanyMutationVariables>;
+
+/**
+ * __useCreateCompanyMutation__
+ *
+ * To run a mutation, you first call `useCreateCompanyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCompanyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCompanyMutation, { data, loading, error }] = useCreateCompanyMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCompanyMutation(baseOptions?: Apollo.MutationHookOptions<CreateCompanyMutation, CreateCompanyMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCompanyMutation, CreateCompanyMutationVariables>(CreateCompanyDocument, options);
+      }
+export type CreateCompanyMutationHookResult = ReturnType<typeof useCreateCompanyMutation>;
+export type CreateCompanyMutationResult = Apollo.MutationResult<CreateCompanyMutation>;
+export type CreateCompanyMutationOptions = Apollo.BaseMutationOptions<CreateCompanyMutation, CreateCompanyMutationVariables>;
 export const UpdateCompanyDocument = gql`
     mutation UpdateCompany($input: UpdateCompanyInput!) {
   updateCompany(input: $input) {
@@ -2817,42 +2587,78 @@ export function useUpdateCompanyMutation(baseOptions?: Apollo.MutationHookOption
 export type UpdateCompanyMutationHookResult = ReturnType<typeof useUpdateCompanyMutation>;
 export type UpdateCompanyMutationResult = Apollo.MutationResult<UpdateCompanyMutation>;
 export type UpdateCompanyMutationOptions = Apollo.BaseMutationOptions<UpdateCompanyMutation, UpdateCompanyMutationVariables>;
-export const UpdateUserRoleDocument = gql`
-    mutation UpdateUserRole($role: UserRole!) {
-  updateUserRole(role: $role) {
+export const ApproveCompanyDocument = gql`
+    mutation ApproveCompany($companyId: ID!) {
+  approveCompany(companyId: $companyId) {
     id
-    displayName
-    role
-    email
+    status
+    companyName
   }
 }
     `;
-export type UpdateUserRoleMutationFn = Apollo.MutationFunction<UpdateUserRoleMutation, UpdateUserRoleMutationVariables>;
+export type ApproveCompanyMutationFn = Apollo.MutationFunction<ApproveCompanyMutation, ApproveCompanyMutationVariables>;
 
 /**
- * __useUpdateUserRoleMutation__
+ * __useApproveCompanyMutation__
  *
- * To run a mutation, you first call `useUpdateUserRoleMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateUserRoleMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useApproveCompanyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useApproveCompanyMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [updateUserRoleMutation, { data, loading, error }] = useUpdateUserRoleMutation({
+ * const [approveCompanyMutation, { data, loading, error }] = useApproveCompanyMutation({
  *   variables: {
- *      role: // value for 'role'
+ *      companyId: // value for 'companyId'
  *   },
  * });
  */
-export function useUpdateUserRoleMutation(baseOptions?: Apollo.MutationHookOptions<UpdateUserRoleMutation, UpdateUserRoleMutationVariables>) {
+export function useApproveCompanyMutation(baseOptions?: Apollo.MutationHookOptions<ApproveCompanyMutation, ApproveCompanyMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateUserRoleMutation, UpdateUserRoleMutationVariables>(UpdateUserRoleDocument, options);
+        return Apollo.useMutation<ApproveCompanyMutation, ApproveCompanyMutationVariables>(ApproveCompanyDocument, options);
       }
-export type UpdateUserRoleMutationHookResult = ReturnType<typeof useUpdateUserRoleMutation>;
-export type UpdateUserRoleMutationResult = Apollo.MutationResult<UpdateUserRoleMutation>;
-export type UpdateUserRoleMutationOptions = Apollo.BaseMutationOptions<UpdateUserRoleMutation, UpdateUserRoleMutationVariables>;
+export type ApproveCompanyMutationHookResult = ReturnType<typeof useApproveCompanyMutation>;
+export type ApproveCompanyMutationResult = Apollo.MutationResult<ApproveCompanyMutation>;
+export type ApproveCompanyMutationOptions = Apollo.BaseMutationOptions<ApproveCompanyMutation, ApproveCompanyMutationVariables>;
+export const RejectCompanyDocument = gql`
+    mutation RejectCompany($companyId: ID!, $reason: String) {
+  rejectCompany(companyId: $companyId, reason: $reason) {
+    id
+    status
+    rejectionReason
+    companyName
+  }
+}
+    `;
+export type RejectCompanyMutationFn = Apollo.MutationFunction<RejectCompanyMutation, RejectCompanyMutationVariables>;
+
+/**
+ * __useRejectCompanyMutation__
+ *
+ * To run a mutation, you first call `useRejectCompanyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRejectCompanyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [rejectCompanyMutation, { data, loading, error }] = useRejectCompanyMutation({
+ *   variables: {
+ *      companyId: // value for 'companyId'
+ *      reason: // value for 'reason'
+ *   },
+ * });
+ */
+export function useRejectCompanyMutation(baseOptions?: Apollo.MutationHookOptions<RejectCompanyMutation, RejectCompanyMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RejectCompanyMutation, RejectCompanyMutationVariables>(RejectCompanyDocument, options);
+      }
+export type RejectCompanyMutationHookResult = ReturnType<typeof useRejectCompanyMutation>;
+export type RejectCompanyMutationResult = Apollo.MutationResult<RejectCompanyMutation>;
+export type RejectCompanyMutationOptions = Apollo.BaseMutationOptions<RejectCompanyMutation, RejectCompanyMutationVariables>;
 export const SignOutDocument = gql`
     mutation SignOut {
   signOut

@@ -173,9 +173,9 @@ export const DASHBOARD_STATS_ADMIN = gql`
       }
       totalCount
     }
-    pendingApplications {
+    pendingCompanies {
       id
-      applicationType
+      companyType
       createdAt
     }
   }
@@ -214,7 +214,7 @@ export const SIDEBAR_BADGE_COUNTS = gql`
       id
       role
     }
-    pendingApplications {
+    pendingCompanies {
       id
     }
   }

@@ -16,13 +16,13 @@ export default function CompanyDashboardPage() {
   const { user, loading: userLoading } = useCurrentUser();
   const { toast } = useToast();
   const { data, loading: companyLoading, error } = useMyCompanyQuery({
-    skip: !user || user.role !== UserRole.CompanyAdmin,
+    skip: !user || user.role !== UserRole.CleanerAdmin,
   });
 
   // Redirect non-company admins
   useEffect(() => {
     if (!userLoading && user) {
-      if (user.role !== UserRole.CompanyAdmin) {
+      if (user.role !== UserRole.CleanerAdmin) {
         toast({
           title: "Access Denied",
           description: "Only company admins can access this page.",

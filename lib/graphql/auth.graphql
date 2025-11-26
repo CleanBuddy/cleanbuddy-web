@@ -18,12 +18,17 @@ query CurrentUser {
     displayName
     role
     email
-    pendingCleanerApplication {
+    company {
       id
       status
-      applicationType
-      createdAt
+      companyName
       rejectionReason
+    }
+    cleanerProfile {
+      id
+      tier
+      isActive
+      isVerified
     }
   }
 }

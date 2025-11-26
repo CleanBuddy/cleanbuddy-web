@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLazyQuery } from "@apollo/client";
-import { GENERATE_DOCUMENT_SIGNED_URL } from "@/lib/graphql/queries/application-queries";
+import { useGenerateDocumentSignedUrlLazyQuery } from "@/lib/api/_gen/gql";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +21,7 @@ export function DocumentViewer({
   onOpenChange,
 }: DocumentViewerProps) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [getSignedUrl, { loading, error }] = useLazyQuery(GENERATE_DOCUMENT_SIGNED_URL);
+  const [getSignedUrl, { loading, error }] = useGenerateDocumentSignedUrlLazyQuery();
 
   useEffect(() => {
     if (open && documentUrl) {

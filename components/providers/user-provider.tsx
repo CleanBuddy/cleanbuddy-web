@@ -1,14 +1,26 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
-import { useCurrentUserQuery } from "@/lib/api/_gen/gql";
+import { useCurrentUserQuery, UserRole, CompanyStatus, CleanerTier } from "@/lib/api/_gen/gql";
 
 interface UserContextType {
   user: {
     id: string;
     displayName: string;
-    role: string;
+    role: UserRole;
     email: string;
+    company?: {
+      id: string;
+      status: CompanyStatus;
+      companyName: string;
+      rejectionReason?: string | null;
+    } | null;
+    cleanerProfile?: {
+      id: string;
+      tier: CleanerTier;
+      isActive: boolean;
+      isVerified: boolean;
+    } | null;
   } | null;
   loading: boolean;
   error?: Error;

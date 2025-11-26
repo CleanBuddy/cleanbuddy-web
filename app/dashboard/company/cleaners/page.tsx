@@ -38,13 +38,13 @@ export default function CompanyCleanersPage() {
   const { toast } = useToast();
 
   const { data, loading, error } = useMyCompanyCleanersQuery({
-    skip: !user || user.role !== UserRole.CompanyAdmin,
+    skip: !user || user.role !== UserRole.CleanerAdmin,
   });
 
   // Redirect non-company admins
   useEffect(() => {
     if (!userLoading && user) {
-      if (user.role !== UserRole.CompanyAdmin) {
+      if (user.role !== UserRole.CleanerAdmin) {
         toast({
           title: "Access Denied",
           description: "Only company admins can access this page.",
@@ -70,9 +70,6 @@ export default function CompanyCleanersPage() {
     );
   };
 
-  const formatCurrency = (bani: number) => {
-    return `${(bani / 100).toFixed(0)} RON`;
-  };
 
   if (userLoading || loading) {
     return (
@@ -206,7 +203,6 @@ export default function CompanyCleanersPage() {
                 <TableRow>
                   <TableHead>Cleaner</TableHead>
                   <TableHead>Tier</TableHead>
-                  <TableHead>Hourly Rate</TableHead>
                   <TableHead>Rating</TableHead>
                   <TableHead>Bookings</TableHead>
                   <TableHead>Status</TableHead>
@@ -231,9 +227,6 @@ export default function CompanyCleanersPage() {
                     </TableCell>
                     <TableCell>
                       {getTierBadge(cleaner.tier)}
-                    </TableCell>
-                    <TableCell>
-                      {formatCurrency(cleaner.hourlyRate)}/hr
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

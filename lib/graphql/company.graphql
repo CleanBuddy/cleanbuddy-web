@@ -1,6 +1,9 @@
 query MyCompany {
   myCompany {
     id
+    companyType
+    status
+    rejectionReason
     companyName
     registrationNumber
     taxId
@@ -16,6 +19,7 @@ query MyCompany {
       insuranceCertificateUrl
       additionalDocuments
     }
+    message
     isActive
     totalCleaners
     activeCleaners
@@ -27,6 +31,9 @@ query MyCompany {
 query Company($id: ID!) {
   company(id: $id) {
     id
+    companyType
+    status
+    rejectionReason
     companyName
     registrationNumber
     taxId
@@ -36,6 +43,13 @@ query Company($id: ID!) {
     companyCounty
     companyCountry
     businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
     isActive
     totalCleaners
     activeCleaners
@@ -52,6 +66,8 @@ query Company($id: ID!) {
 query Companies {
   companies {
     id
+    companyType
+    status
     companyName
     registrationNumber
     taxId
@@ -69,6 +85,65 @@ query Companies {
   }
 }
 
+query PendingCompanies {
+  pendingCompanies {
+    id
+    companyType
+    status
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
+    adminUser {
+      id
+      displayName
+      email
+    }
+    createdAt
+  }
+}
+
+query GenerateDocumentSignedUrl($documentUrl: String!) {
+  generateDocumentSignedUrl(documentUrl: $documentUrl)
+}
+
+mutation CreateCompany($input: CreateCompanyInput!) {
+  createCompany(input: $input) {
+    id
+    companyType
+    status
+    companyName
+    registrationNumber
+    taxId
+    companyStreet
+    companyCity
+    companyPostalCode
+    companyCounty
+    companyCountry
+    businessType
+    documents {
+      identityDocumentUrl
+      businessRegistrationUrl
+      insuranceCertificateUrl
+      additionalDocuments
+    }
+    message
+    createdAt
+  }
+}
+
 mutation UpdateCompany($input: UpdateCompanyInput!) {
   updateCompany(input: $input) {
     id
@@ -80,5 +155,22 @@ mutation UpdateCompany($input: UpdateCompanyInput!) {
     businessType
     isActive
     updatedAt
+  }
+}
+
+mutation ApproveCompany($companyId: ID!) {
+  approveCompany(companyId: $companyId) {
+    id
+    status
+    companyName
+  }
+}
+
+mutation RejectCompany($companyId: ID!, $reason: String) {
+  rejectCompany(companyId: $companyId, reason: $reason) {
+    id
+    status
+    rejectionReason
+    companyName
   }
 }

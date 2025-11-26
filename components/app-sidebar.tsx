@@ -47,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     pollInterval: 30000, // Poll every 30 seconds for updates
   });
 
-  const pendingApplicationsCount = badgeData?.pendingApplications?.length || 0;
+  const pendingCompaniesCount = badgeData?.pendingCompanies?.length || 0;
 
   // Navigation items based on user role
   const getNavItems = () => {
@@ -79,12 +79,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ];
     }
 
-    // Company Admin navigation
-    if (role === UserRole.CompanyAdmin) {
+    // Cleaner Admin (Company Admin) navigation
+    if (role === UserRole.CleanerAdmin) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "My Company", url: "/dashboard/company", icon: Building2 },
-        { title: "My Cleaners", url: "/dashboard/cleaners", icon: Users },
+        { title: "My Cleaners", url: "/dashboard/company/cleaners", icon: Users },
         { title: "Company Bookings", url: "/dashboard/bookings", icon: ClipboardList },
         { title: "Settings", url: "/dashboard/settings", icon: Settings },
       ];
@@ -94,7 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (role === UserRole.GlobalAdmin) {
       return [
         { title: "Dashboard", url: "/dashboard", icon: Home },
-        { title: "Applications", url: "/dashboard/applications", icon: FileText, badge: pendingApplicationsCount },
+        { title: "Applications", url: "/dashboard/applications", icon: FileText, badge: pendingCompaniesCount },
         { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
         { title: "All Bookings", url: "/dashboard/bookings", icon: ClipboardList },
         { title: "Cleaners", url: "/dashboard/cleaners", icon: Users },
@@ -126,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate text-xs text-muted-foreground">
                     {user?.role === UserRole.Client && "Customer Portal"}
                     {user?.role === UserRole.Cleaner && "Cleaner Portal"}
-                    {user?.role === UserRole.CompanyAdmin && "Company Portal"}
+                    {user?.role === UserRole.CleanerAdmin && "Company Portal"}
                     {user?.role === UserRole.GlobalAdmin && "Admin Portal"}
                   </span>
                 </div>

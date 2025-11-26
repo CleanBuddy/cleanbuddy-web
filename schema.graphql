@@ -99,93 +99,6 @@ extend type Mutation {
     # Set address as default
     setDefaultAddress(id: ID!): Address! @authRequired
 }
-enum ApplicationType {
-    CLEANER
-    COMPANY_ADMIN
-}
-
-enum ApplicationStatus {
-    PENDING
-    APPROVED
-    REJECTED
-}
-
-input CompanyInfoInput {
-    companyName: String!
-    registrationNumber: String!
-    taxId: String!
-    companyStreet: String!
-    companyCity: String!
-    companyPostalCode: String!
-    companyCounty: String
-    companyCountry: String!
-    businessType: String
-}
-
-input ApplicationDocumentsInput {
-    identityDocument: Upload!
-    businessRegistration: Upload
-    insuranceCertificate: Upload
-    additionalDocuments: [Upload!]
-}
-
-input SubmitApplicationInput {
-    applicationType: ApplicationType!
-    message: String
-    companyInfo: CompanyInfoInput
-    documents: ApplicationDocumentsInput
-}
-
-type CompanyInfo {
-    companyName: String!
-    registrationNumber: String!
-    taxId: String!
-    companyStreet: String!
-    companyCity: String!
-    companyPostalCode: String!
-    companyCounty: String
-    companyCountry: String!
-    businessType: String
-}
-
-type ApplicationDocuments {
-    identityDocumentUrl: String!
-    businessRegistrationUrl: String
-    insuranceCertificateUrl: String
-    additionalDocuments: [String!]
-}
-
-type Application {
-    id: ID!
-    user: User! @goField(forceResolver: true)
-    applicationType: ApplicationType!
-    status: ApplicationStatus!
-    message: String
-    companyInfo: CompanyInfo
-    documents: ApplicationDocuments
-    rejectionReason: String
-    reviewedBy: User @goField(forceResolver: true)
-    reviewedAt: Time
-    createdAt: Time!
-    updatedAt: Time!
-}
-
-## QUERIES
-
-extend type Query {
-    application(id: ID!): Application @authRequired
-    myApplications: [Application!]! @authRequired
-    pendingApplications: [Application!]! @authRequired
-    generateDocumentSignedUrl(documentUrl: String!): String! @authRequired
-}
-
-## MUTATIONS
-
-extend type Mutation {
-    submitApplication(input: SubmitApplicationInput!): Application! @authRequired
-    approveApplication(applicationId: ID!): Application! @authRequired
-    rejectApplication(applicationId: ID!, reason: String): Application! @authRequired
-}
 
 type AuthResult {
     accessToken: String!
@@ -612,7 +525,6 @@ type CleanerProfile {
 
     # Tier and Performance
     tier: CleanerTier!
-    hourlyRate: Int! # Rate in bani (100 bani = 1 RON)
     totalBookings: Int!
     completedBookings: Int!
     cancelledBookings: Int!
@@ -649,23 +561,15 @@ type CleanerProfileConnection {
     totalCount: Int!
 }
 
-type TierRateRange {
-    tier: CleanerTier!
-    minRate: Int!
-    maxRate: Int!
-}
-
 input CreateCleanerProfileInput {
     bio: String
     profilePicture: String
-    hourlyRate: Int!
     serviceAreaInputs: [CreateServiceAreaInput!]!
 }
 
 input UpdateCleanerProfileInput {
     bio: String
     profilePicture: String
-    hourlyRate: Int
     isActive: Boolean
     isAvailableToday: Boolean
 }
@@ -674,8 +578,6 @@ input CleanerProfileFiltersInput {
     tier: CleanerTier
     minRating: Float
     maxRating: Float
-    minHourlyRate: Int
-    maxHourlyRate: Int
     isActive: Boolean
     isVerified: Boolean
     isAvailableToday: Boolean
@@ -715,9 +617,6 @@ extend type Query {
         postalCode: String
         filters: CleanerProfileFiltersInput
     ): [CleanerProfile!]! @authRequired
-
-    # Get tier rate ranges
-    tierRateRanges: [TierRateRange!]!
 }
 
 ## MUTATIONS
@@ -740,10 +639,47 @@ enum CompanyType {
     BUSINESS
 }
 
+enum CompanyStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+# Documents uploaded during company application
+type ApplicationDocuments {
+    identityDocumentUrl: String!
+    businessRegistrationUrl: String
+    insuranceCertificateUrl: String
+    additionalDocuments: [String!]
+}
+
+input CompanyInfoInput {
+    companyName: String!
+    registrationNumber: String!
+    taxId: String!
+    companyStreet: String!
+    companyCity: String!
+    companyPostalCode: String!
+    companyCounty: String
+    companyCountry: String!
+    businessType: String
+}
+
+input ApplicationDocumentsInput {
+    identityDocument: Upload!
+    businessRegistration: Upload
+    insuranceCertificate: Upload
+    additionalDocuments: [Upload!]
+}
+
 type Company {
     id: ID!
     adminUser: User! @goField(forceResolver: true)
     companyType: CompanyType!
+
+    # Approval Status (drives UI state)
+    status: CompanyStatus!
+    rejectionReason: String
 
     # Company Information
     companyName: String!
@@ -759,6 +695,9 @@ type Company {
     # Documents
     documents: ApplicationDocuments
 
+    # Message from applicant
+    message: String
+
     # Status
     isActive: Boolean!
 
@@ -771,6 +710,13 @@ type Company {
 
     createdAt: Time!
     updatedAt: Time!
+}
+
+input CreateCompanyInput {
+    companyType: CompanyType!
+    companyInfo: CompanyInfoInput!
+    documents: ApplicationDocumentsInput!
+    message: String
 }
 
 input UpdateCompanyInput {
@@ -794,13 +740,28 @@ extend type Query {
 
     # List all companies (global admin only)
     companies: [Company!]! @authRequired
+
+    # List pending companies for approval (global admin only)
+    pendingCompanies: [Company!]! @authRequired
+
+    # Generate signed URL for document download
+    generateDocumentSignedUrl(documentUrl: String!): String! @authRequired
 }
 
 ## MUTATIONS
 
 extend type Mutation {
-    # Update the current user's company (company admin only)
+    # Create a new company (cleaner admin only, when status is pending)
+    createCompany(input: CreateCompanyInput!): Company! @authRequired
+
+    # Update the current user's company (cleaner admin only)
     updateCompany(input: UpdateCompanyInput!): Company! @authRequired
+
+    # Approve a company (global admin only)
+    approveCompany(companyId: ID!): Company! @authRequired
+
+    # Reject a company (global admin only)
+    rejectCompany(companyId: ID!, reason: String): Company! @authRequired
 }
 # Common directives
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
@@ -1365,14 +1326,8 @@ extend type Mutation {
 }
 enum UserRole {
     CLIENT
-    PENDING_APPLICATION
-    PENDING_CLEANER
-    REJECTED_CLEANER
+    CLEANER_ADMIN
     CLEANER
-    PENDING_COMPANY_APPLICATION
-    PENDING_COMPANY_ADMIN
-    REJECTED_COMPANY_ADMIN
-    COMPANY_ADMIN
     GLOBAL_ADMIN
 }
 
@@ -1386,8 +1341,10 @@ type User {
     role: UserRole!
     email: String!
 
-    applications: [Application!]! @authRequired @goField(forceResolver: true)
-    pendingCleanerApplication: Application @authRequired @goField(forceResolver: true)
+    # Company for CLEANER_ADMIN users
+    company: Company @goField(forceResolver: true)
+    # Cleaner profile for CLEANER and CLEANER_ADMIN users
+    cleanerProfile: CleanerProfile @goField(forceResolver: true)
 }
 
 type UserEdge {
@@ -1412,5 +1369,4 @@ extend type Mutation {
     signOut: Void! @authRequired
     deleteCurrentUser: Void! @authRequired
     updateCurrentUser(input: UpdateCurrentUserInput!): User! @authRequired
-    updateUserRole(role: UserRole!): User! @authRequired
 }

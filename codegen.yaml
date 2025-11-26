@@ -1,4 +1,4 @@
-schema: http://localhost:8080/api
+schema: ./schema.graphql
 documents: "./lib/graphql/**/*.graphql"
 generates:
   "./lib/api/_gen/gql.tsx":

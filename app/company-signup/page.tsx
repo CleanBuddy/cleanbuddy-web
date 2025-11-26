@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
 import { useCurrentUser } from "@/components/providers/user-provider";
-import { SUBMIT_APPLICATION } from "@/lib/graphql/mutations/application-mutations";
-import { UserRole, ApplicationType } from "@/lib/api/_gen/gql";
+import { useCreateCompanyMutation, UserRole, CompanyType, CompanyStatus } from "@/lib/api/_gen/gql";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,60 +42,34 @@ export default function CompanySignupPage() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<FormStep>("company");
   const [message, setMessage] = useState("");
+  const [companyType, setCompanyType] = useState<CompanyType>(CompanyType.Business);
 
-  // Redirect if user already has pending application or is already a company admin
+  // Redirect based on user state
   useEffect(() => {
     if (!userLoading && user) {
-      // If user has already submitted application (PENDING_COMPANY_ADMIN), redirect to dashboard
-      if (user.role === UserRole.PendingCompanyAdmin) {
+      // Only CLEANER_ADMIN users without a company can access this page
+      if (user.role !== UserRole.CleanerAdmin) {
         toast({
-          title: "Application Already Submitted",
-          description: "Your company application is under review. Check your dashboard for status.",
-        });
-        router.push("/dashboard");
-        return;
-      }
-
-      // If user is already an approved company admin, redirect to dashboard
-      if (user.role === UserRole.CompanyAdmin) {
-        toast({
-          title: "Already a Company Admin",
-          description: "You're already approved as a company admin!",
-        });
-        router.push("/dashboard/company");
-        return;
-      }
-
-      // If user is a cleaner or pending cleaner, don't allow company signup
-      if (user.role === UserRole.Cleaner || user.role === UserRole.PendingCleaner) {
-        toast({
-          title: "Cannot Apply",
-          description: "Cleaners cannot apply as company admins.",
-          variant: "destructive",
-        });
-        router.push("/dashboard");
-        return;
-      }
-
-      // If user was rejected as company admin, they must contact support
-      if (user.role === UserRole.RejectedCompanyAdmin) {
-        toast({
-          title: "Reapplication Available",
-          description: "Please contact support before submitting a new application.",
-          variant: "destructive",
-        });
-        router.push("/dashboard");
-        return;
-      }
-
-      // Only CLIENT or PENDING_COMPANY_APPLICATION roles can access this page
-      if (user.role !== UserRole.Client && user.role !== UserRole.PendingCompanyApplication) {
-        toast({
-          title: "Cannot Apply",
-          description: "You cannot apply as a company admin in your current state.",
+          title: "Access Denied",
+          description: "This page is only for cleaner admin users.",
           variant: "destructive",
         });
         router.push("/");
+        return;
+      }
+
+      // If user already has a company, redirect to dashboard
+      if (user.company) {
+        if (user.company.status === CompanyStatus.Approved) {
+          toast({
+            title: "Company Already Registered",
+            description: "Your company is already approved!",
+          });
+          router.push("/dashboard/company");
+        } else {
+          // Pending or rejected - let them see dashboard
+          router.push("/dashboard");
+        }
         return;
       }
     }
@@ -122,17 +94,17 @@ export default function CompanySignupPage() {
     additionalDocuments: [],
   });
 
-  const [submitApplication, { loading }] = useMutation(SUBMIT_APPLICATION, {
+  const [createCompany, { loading }] = useCreateCompanyMutation({
     refetchQueries: ['CurrentUser'],
     awaitRefetchQueries: true,
     onCompleted: async () => {
       toast({
-        title: "Application Submitted",
-        description: "Your company application has been submitted for review. We'll notify you once it's been processed.",
+        title: "Company Registered",
+        description: "Your company has been submitted for review. We'll notify you once it's been processed.",
       });
 
       await refetch();
-      router.push("/");
+      router.push("/dashboard");
     },
     onError: (error) => {
       toast({
@@ -215,26 +187,45 @@ export default function CompanySignupPage() {
 
   const handleSubmit = async () => {
     if (!user) {
-      toast({ title: "Error", description: "You must be logged in to apply", variant: "destructive" });
+      toast({ title: "Error", description: "You must be logged in to register", variant: "destructive" });
       return;
     }
 
-    await submitApplication({
+    await createCompany({
       variables: {
         input: {
-          applicationType: ApplicationType.CompanyAdmin,
-          message,
-          companyInfo,
+          companyType,
+          companyInfo: {
+            companyName: companyInfo.companyName,
+            registrationNumber: companyInfo.registrationNumber,
+            taxId: companyInfo.taxId,
+            companyStreet: companyInfo.companyStreet,
+            companyCity: companyInfo.companyCity,
+            companyPostalCode: companyInfo.companyPostalCode,
+            companyCounty: companyInfo.companyCounty || null,
+            companyCountry: companyInfo.companyCountry,
+            businessType: companyInfo.businessType || null,
+          },
           documents: {
-            identityDocument: documents.identityDocument,
+            identityDocument: documents.identityDocument!,
             businessRegistration: documents.businessRegistration,
             insuranceCertificate: documents.insuranceCertificate,
             additionalDocuments: documents.additionalDocuments.length > 0 ? documents.additionalDocuments : null,
           },
+          message: message || null,
         },
       },
     });
   };
+
+  // Show loading while checking user state
+  if (userLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -246,7 +237,7 @@ export default function CompanySignupPage() {
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/auth">Sign In</Link>
+              <Link href="/auth?intent=company">Sign In</Link>
             </Button>
           </CardContent>
         </Card>
@@ -297,6 +288,22 @@ export default function CompanySignupPage() {
           {currentStep === "company" && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Company Information</h3>
+
+              <div className="space-y-2">
+                <Label>Company Type</Label>
+                <Select
+                  value={companyType}
+                  onValueChange={(value) => setCompanyType(value as CompanyType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CompanyType.Individual}>Individual (Solo Cleaner)</SelectItem>
+                    <SelectItem value={CompanyType.Business}>Business (Multiple Cleaners)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2 md:col-span-2">
@@ -487,9 +494,10 @@ export default function CompanySignupPage() {
                   <h4 className="font-medium mb-2">Company Information</h4>
                   <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
                     <p><span className="font-medium">Company:</span> {companyInfo.companyName}</p>
+                    <p><span className="font-medium">Type:</span> {companyType === CompanyType.Individual ? "Individual" : "Business"}</p>
                     <p><span className="font-medium">Registration:</span> {companyInfo.registrationNumber}</p>
                     <p><span className="font-medium">Tax ID:</span> {companyInfo.taxId}</p>
-                    <p><span className="font-medium">Type:</span> {companyInfo.businessType}</p>
+                    <p><span className="font-medium">Business Type:</span> {companyInfo.businessType}</p>
                     <p><span className="font-medium">Address:</span> {companyInfo.companyStreet}, {companyInfo.companyCity}, {companyInfo.companyPostalCode}</p>
                   </div>
                 </div>

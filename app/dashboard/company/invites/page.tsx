@@ -64,7 +64,7 @@ export default function CompanyInvitesPage() {
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
 
   const { data, loading, error, refetch } = useMyCompanyInvitesQuery({
-    skip: !user || user.role !== UserRole.CompanyAdmin,
+    skip: !user || user.role !== UserRole.CleanerAdmin,
   });
 
   const [createInvite, { loading: createLoading }] = useCreateCleanerInviteMutation();
@@ -73,7 +73,7 @@ export default function CompanyInvitesPage() {
   // Redirect non-company admins
   useEffect(() => {
     if (!userLoading && user) {
-      if (user.role !== UserRole.CompanyAdmin) {
+      if (user.role !== UserRole.CleanerAdmin) {
         toast({
           title: "Access Denied",
           description: "Only company admins can access this page.",
