@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import {
   UserRole,
+  CompanyType,
   useMyCompanyCleanersQuery,
   CleanerTier,
 } from "@/lib/api/_gen/gql";
@@ -41,7 +42,7 @@ export default function CompanyCleanersPage() {
     skip: !user || user.role !== UserRole.CleanerAdmin,
   });
 
-  // Redirect non-company admins
+  // Redirect non-company admins and Individual companies
   useEffect(() => {
     if (!userLoading && user) {
       if (user.role !== UserRole.CleanerAdmin) {
@@ -51,6 +52,13 @@ export default function CompanyCleanersPage() {
           variant: "destructive",
         });
         router.push("/dashboard");
+      } else if (user.company?.companyType === CompanyType.Individual) {
+        toast({
+          title: "Not Available",
+          description: "Team management is only available for business accounts.",
+          variant: "destructive",
+        });
+        router.push("/dashboard/company");
       }
     }
   }, [user, userLoading, router, toast]);

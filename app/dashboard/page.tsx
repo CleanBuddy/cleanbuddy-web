@@ -13,7 +13,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { UpcomingItemCard } from "@/components/dashboard/upcoming-item-card";
 import { CleanerDashboard } from "@/components/dashboard/cleaner-dashboard";
 import { AccountButton } from "@/components/account-button";
-import { UserRole, CompanyStatus } from "@/lib/api/_gen/gql";
+import { UserRole, CompanyStatus, CompanyType } from "@/lib/api/_gen/gql";
 
 export default function DashboardPage() {
   const { user, loading } = useCurrentUser();
@@ -321,15 +321,15 @@ export default function DashboardPage() {
     return <CleanerDashboard user={user} />;
   }
 
-  // Admin Dashboard
-  if (user?.role === UserRole.GlobalAdmin || user?.role === UserRole.CleanerAdmin) {
+  // CLEANER_ADMIN with approved company - different view for Individual vs Business
+  if (user?.role === UserRole.CleanerAdmin && user?.company?.status === CompanyStatus.Approved) {
+    const isBusiness = user.company.companyType === CompanyType.Business;
     const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_ADMIN, {
       skip: !user,
     });
 
     const allBookings = data?.allBookings?.edges?.map((edge: any) => edge.node) || [];
     const totalBookings = data?.allBookings?.totalCount || 0;
-    const pendingApplicationsCount = data?.pendingApplications?.length || 0;
 
     // Calculate this month's revenue from completed bookings
     const now = new Date();
@@ -339,10 +339,153 @@ export default function DashboardPage() {
       .filter((b: any) => new Date(b.scheduledDate) >= startOfMonth)
       .reduce((sum: number, b: any) => sum + b.totalPrice, 0);
 
-    // TODO: Calculate active cleaners count - needs backend query
-    const activeCleaners = 0;
-
     // TODO: Calculate average rating - needs backend query
+    const avgRating = "—";
+
+    return (
+      <div className="space-y-6 py-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {isBusiness ? "Company Dashboard" : "Dashboard"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {isBusiness
+              ? "Monitor your company's activity and manage your team"
+              : "Monitor your bookings and manage your cleaning business"}
+          </p>
+        </div>
+
+        {/* Statistics - Different for Individual vs Business */}
+        <div className={`grid gap-4 md:grid-cols-2 ${isBusiness ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+          {dataLoading ? (
+            <>
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              {isBusiness && <Skeleton className="h-32" />}
+            </>
+          ) : (
+            <>
+              <StatCard
+                title="Total Bookings"
+                value={totalBookings}
+                icon={Calendar}
+                description="All time"
+              />
+              {/* Only show Active Cleaners for BUSINESS companies */}
+              {isBusiness && (
+                <StatCard
+                  title="Active Cleaners"
+                  value={user.company.activeCleaners || 0}
+                  icon={Users}
+                  description="In your team"
+                />
+              )}
+              <StatCard
+                title="Revenue"
+                value={`${(monthlyRevenue / 100).toFixed(2)} RON`}
+                icon={CreditCard}
+                description="This month"
+              />
+              <StatCard
+                title="Avg Rating"
+                value={avgRating}
+                icon={Star}
+                description={isBusiness ? "Company average" : "Your rating"}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Recent Activity */}
+        {allBookings.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Bookings</CardTitle>
+              <CardDescription>Latest platform activity</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {allBookings.slice(0, 5).map((booking: any) => (
+                  <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={
+                          booking.status === "COMPLETED" ? "default" :
+                          booking.status === "CONFIRMED" ? "secondary" :
+                          booking.status === "PENDING" ? "outline" : "destructive"
+                        }>
+                          {booking.status}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(booking.scheduledDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium mt-1">
+                        {(booking.totalPrice / 100).toFixed(2)} RON
+                      </p>
+                    </div>
+                    <Link href="/dashboard/bookings">
+                      <Button size="sm" variant="ghost">View</Button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quick Actions - Different for Individual vs Business */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className={`grid gap-4 ${isBusiness ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+            <Button asChild className="w-full justify-start" variant="outline">
+              <Link href="/dashboard/company">
+                <Users className="mr-2 h-4 w-4" />
+                My Company
+              </Link>
+            </Button>
+            {isBusiness && (
+              <Button asChild className="w-full justify-start" variant="outline">
+                <Link href="/dashboard/company/cleaners">
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Team
+                </Link>
+              </Button>
+            )}
+            <Button asChild className="w-full justify-start" variant="outline">
+              <Link href="/dashboard/bookings">
+                <Calendar className="mr-2 h-4 w-4" />
+                View Bookings
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Global Admin Dashboard
+  if (user?.role === UserRole.GlobalAdmin) {
+    const { data, loading: dataLoading } = useQuery(DASHBOARD_STATS_ADMIN, {
+      skip: !user,
+    });
+
+    const allBookings = data?.allBookings?.edges?.map((edge: any) => edge.node) || [];
+    const totalBookings = data?.allBookings?.totalCount || 0;
+    const pendingApplicationsCount = data?.pendingCompanies?.length || 0;
+
+    // Calculate this month's revenue from completed bookings
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const completedBookings = allBookings.filter((b: any) => b.status === "COMPLETED");
+    const monthlyRevenue = completedBookings
+      .filter((b: any) => new Date(b.scheduledDate) >= startOfMonth)
+      .reduce((sum: number, b: any) => sum + b.totalPrice, 0);
+
+    const activeCleaners = 0;
     const avgRating = "—";
 
     return (

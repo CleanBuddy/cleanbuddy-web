@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext } from "react";
-import { useCurrentUserQuery, UserRole, CompanyStatus, CleanerTier } from "@/lib/api/_gen/gql";
+import { useCurrentUserQuery, UserRole, CompanyStatus, CleanerTier, CompanyType } from "@/lib/api/_gen/gql";
 
 interface UserContextType {
   user: {
@@ -12,8 +12,11 @@ interface UserContextType {
     company?: {
       id: string;
       status: CompanyStatus;
+      companyType: CompanyType;
       companyName: string;
       rejectionReason?: string | null;
+      totalCleaners: number;
+      activeCleaners: number;
     } | null;
     cleanerProfile?: {
       id: string;

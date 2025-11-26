@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, MapPin, FileText, Settings, UserPlus } from "lucide-react";
-import { UserRole, useMyCompanyQuery } from "@/lib/api/_gen/gql";
+import { UserRole, CompanyType, useMyCompanyQuery } from "@/lib/api/_gen/gql";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -81,47 +81,59 @@ export default function CompanyDashboardPage() {
     individual: "Individual (PF)",
   };
 
+  const isBusiness = company.companyType === CompanyType.Business;
+
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{company.companyName}</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your company and cleaners
+            {isBusiness ? "Manage your company and cleaners" : "Manage your cleaning business"}
           </p>
         </div>
-        <Badge variant={company.isActive ? "default" : "secondary"}>
-          {company.isActive ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">
+            {isBusiness ? "Business" : "Individual"}
+          </Badge>
+          <Badge variant={company.isActive ? "default" : "secondary"}>
+            {company.isActive ? "Active" : "Inactive"}
+          </Badge>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cleaners</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{company.totalCleaners}</div>
-            <p className="text-xs text-muted-foreground">
-              Registered with your company
-            </p>
-          </CardContent>
-        </Card>
+      {/* Stats Cards - Different for Individual vs Business */}
+      <div className={`grid gap-4 md:grid-cols-2 ${isBusiness ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+        {/* Only show cleaner stats for BUSINESS companies */}
+        {isBusiness && (
+          <>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Cleaners</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{company.totalCleaners}</div>
+                <p className="text-xs text-muted-foreground">
+                  Registered with your company
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Cleaners</CardTitle>
-            <Users className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{company.activeCleaners}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently available
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Cleaners</CardTitle>
+                <Users className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{company.activeCleaners}</div>
+                <p className="text-xs text-muted-foreground">
+                  Currently available
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -202,26 +214,31 @@ export default function CompanyDashboardPage() {
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>
-            Manage your company and team
+            {isBusiness ? "Manage your company and team" : "Manage your business settings"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <Button
-            variant="outline"
-            className="justify-start"
-            onClick={() => router.push("/dashboard/company/invites")}
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            Invite Cleaner
-          </Button>
-          <Button
-            variant="outline"
-            className="justify-start"
-            onClick={() => router.push("/dashboard/company/cleaners")}
-          >
-            <Users className="mr-2 h-4 w-4" />
-            View Cleaners
-          </Button>
+        <CardContent className={`grid gap-4 ${isBusiness ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+          {/* Only show invite/cleaner actions for BUSINESS companies */}
+          {isBusiness && (
+            <>
+              <Button
+                variant="outline"
+                className="justify-start"
+                onClick={() => router.push("/dashboard/company/invites")}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite Cleaner
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start"
+                onClick={() => router.push("/dashboard/company/cleaners")}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                View Cleaners
+              </Button>
+            </>
+          )}
           <Button variant="outline" className="justify-start" disabled>
             <Settings className="mr-2 h-4 w-4" />
             Company Settings

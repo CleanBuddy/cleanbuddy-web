@@ -35,7 +35,7 @@ import { useCurrentUser } from "@/components/providers/user-provider";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { SIDEBAR_BADGE_COUNTS } from "@/lib/graphql/queries/dashboard-queries";
-import { UserRole } from "@/lib/api/_gen/gql";
+import { UserRole, CompanyType } from "@/lib/api/_gen/gql";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useCurrentUser();
@@ -81,13 +81,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     // Cleaner Admin (Company Admin) navigation
     if (role === UserRole.CleanerAdmin) {
-      return [
+      const isBusiness = user?.company?.companyType === CompanyType.Business;
+
+      const items = [
         { title: "Dashboard", url: "/dashboard", icon: Home },
         { title: "My Company", url: "/dashboard/company", icon: Building2 },
-        { title: "My Cleaners", url: "/dashboard/company/cleaners", icon: Users },
+      ];
+
+      // Only show "My Cleaners" for BUSINESS companies (not INDIVIDUAL)
+      if (isBusiness) {
+        items.push({ title: "My Cleaners", url: "/dashboard/company/cleaners", icon: Users });
+      }
+
+      items.push(
         { title: "Company Bookings", url: "/dashboard/bookings", icon: ClipboardList },
         { title: "Settings", url: "/dashboard/settings", icon: Settings },
-      ];
+      );
+
+      return items;
     }
 
     // Global Admin navigation

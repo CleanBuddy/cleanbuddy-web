@@ -1450,7 +1450,7 @@ export type AuthWithRefreshTokenMutation = { __typename?: 'Mutation', authWithRe
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, company?: { __typename?: 'Company', id: string, status: CompanyStatus, companyName: string, rejectionReason?: string | null } | null, cleanerProfile?: { __typename?: 'CleanerProfile', id: string, tier: CleanerTier, isActive: boolean, isVerified: boolean } | null } | null };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, displayName: string, role: UserRole, email: string, company?: { __typename?: 'Company', id: string, status: CompanyStatus, companyType: CompanyType, companyName: string, rejectionReason?: string | null, totalCleaners: number, activeCleaners: number } | null, cleanerProfile?: { __typename?: 'CleanerProfile', id: string, tier: CleanerTier, isActive: boolean, isVerified: boolean } | null } | null };
 
 export type ValidateCleanerInviteTokenQueryVariables = Exact<{
   token: Scalars['String']['input'];
@@ -1672,8 +1672,11 @@ export const CurrentUserDocument = gql`
     company {
       id
       status
+      companyType
       companyName
       rejectionReason
+      totalCleaners
+      activeCleaners
     }
     cleanerProfile {
       id

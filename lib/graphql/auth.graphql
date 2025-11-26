@@ -21,8 +21,11 @@ query CurrentUser {
     company {
       id
       status
+      companyType
       companyName
       rejectionReason
+      totalCleaners
+      activeCleaners
     }
     cleanerProfile {
       id
