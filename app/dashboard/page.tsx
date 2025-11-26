@@ -343,7 +343,7 @@ export default function DashboardPage() {
     const avgRating = "—";
 
     return (
-      <div className="space-y-6 py-6">
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             {isBusiness ? "Company Dashboard" : "Dashboard"}
